@@ -1,0 +1,65 @@
+<div class="flex min-h-screen">
+  <!-- Left side (Form) -->
+  <div class="flex flex-col justify-center w-full md:w-1/2 p-10 md:p-20 bg-white">
+    <h1 class="text-3xl font-bold mb-2">Sign In</h1>
+    <p class="text-gray-500 mb-6">Enter your email and password to sign in!</p>
+
+    <!-- Social buttons -->
+    <div class="flex gap-3 mb-6">
+      <button class="flex-1 border border-gray-200 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50">
+        <img src="" class="w-5" alt="Google" />
+        Sign in with Google
+      </button>
+      <button class="flex-1 border border-gray-200 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50">
+        <img src="" class="w-5" alt="X" />
+        Sign in with X
+      </button>
+    </div>
+
+    <div class="flex items-center mb-4">
+      <div class="flex-1 border-t border-gray-200"></div>
+      <span class="px-3 text-gray-400 text-sm">Or</span>
+      <div class="flex-1 border-t border-gray-200"></div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+      <div>
+        <label class="text-sm font-medium">Email *</label>
+        <input type="email" formControlName="email" placeholder="info@gmail.com"
+          class="w-full border border-gray-300 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-indigo-500"/>
+      </div>
+
+      <div>
+        <label class="text-sm font-medium">Password *</label>
+        <input type="password" formControlName="password" placeholder="Enter your password"
+          class="w-full border border-gray-300 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-indigo-500"/>
+      </div>
+
+      <div class="flex items-center justify-between text-sm">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" formControlName="rememberMe" class="w-4 h-4 text-indigo-600" />
+          Keep me logged in
+        </label>
+        <a routerLink="/auth/forgot-password" class="text-indigo-500 hover:underline">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+        Sign in
+      </button>
+
+      <p class="text-sm text-gray-500 text-center">
+        Don’t have an account?
+        <a routerLink="/auth/register" class="text-indigo-500 hover:underline">Sign Up</a>
+      </p>
+    </form>
+  </div>
+
+  <!-- Right side (Brand) -->
+  <div class="hidden md:flex w-1/2 bg-[#0e1431] flex-col justify-center items-center text-white">
+    <img src="assets/images/logo.svg" alt="TailAdmin" class="w-12 h-12 mb-3" />
+    <h2 class="text-3xl font-semibold">TailAdmin</h2>
+    <p class="text-sm text-gray-400 mt-2 text-center w-3/4">
+      Free and Open-Source Tailwind CSS Admin Dashboard Template
+    </p>
+  </div>
+</div>

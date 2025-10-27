@@ -1,0 +1,124 @@
+<div class="w-full max-w-md pt-10 mx-auto">
+  <a
+    routerLink="/"
+    class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20" fill="none">
+      <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    Back to dashboard
+  </a>
+</div>
+
+<div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+  <div>
+    <div class="mb-5 sm:mb-8">
+      <h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+        Sign In
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Enter your email and password to sign in!
+      </p>
+    </div>
+
+    <!-- OAuth Buttons -->
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
+      <!-- Google -->
+      <button class="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+        <!-- SVG omitted for brevity -->
+        Sign in with Google
+      </button>
+
+      <!-- X -->
+      <button class="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+        <!-- SVG omitted for brevity -->
+        Sign in with X
+      </button>
+    </div>
+
+    <!-- Divider -->
+    <div class="relative py-3 sm:py-5">
+      <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-gray-200 dark:border-gray-800"></div>
+      </div>
+      <div class="relative flex justify-center text-sm">
+        <span class="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
+          Or
+        </span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSignIn()" class="space-y-6">
+      <div>
+        <app-label>Email <span class="text-error-500">*</span></app-label>
+        <app-input-field
+          type="email"
+          placeholder="info@gmail.com"
+          [value]="email"
+          (valueChange)="email = $event.toString()"
+          name="email"
+          className="form-input"
+          required
+        ></app-input-field>
+
+      </div>
+
+      <div>
+        <app-label>Password <span class="text-error-500">*</span></app-label>
+        <div class="relative">
+          <app-input-field
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Enter your password"
+            [value]="password"
+            (valueChange)="password = $event.toString()"
+            name="password"
+            className="form-input"
+            required
+          ></app-input-field>
+
+
+          <span
+            (click)="togglePasswordVisibility()"
+            class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+          >
+            <ng-container *ngIf="showPassword; else hideIcon">
+              <!-- eye open SVG -->
+              <svg width="1em" height="1em" viewBox="0 0 20 20" fill="none" class="fill-gray-500 dark:fill-gray-400 size-5">
+                <!-- path omitted for brevity -->
+              </svg>
+            </ng-container>
+            <ng-template #hideIcon>
+              <!-- eye closed SVG -->
+              <svg width="1em" height="1em" viewBox="0 0 20 20" fill="none" class="fill-gray-500 dark:fill-gray-400 size-5">
+                <!-- path omitted for brevity -->
+              </svg>
+            </ng-template>
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <app-checkbox [(checked)]="isChecked" label="Keep me logged in"></app-checkbox>
+        </div>
+        <a routerLink="/reset-password" class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
+          Forgot password?
+        </a>
+      </div>
+
+      <app-button className="w-full" size="sm" (btnClick)="onSignIn()">
+        Sign in
+      </app-button>
+    </form>
+
+    <div class="mt-5">
+      <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+        Don't have an account?
+        <a routerLink="/signup" class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
+          Sign Up
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
