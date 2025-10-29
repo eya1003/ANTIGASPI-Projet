@@ -1,27 +1,42 @@
-import { Component } from '@angular/core';
-import { DropdownComponent } from '../../ui/dropdown/dropdown.component';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { DropdownComponent } from '../../ui/dropdown/dropdown.component';
 import { DropdownItemTwoComponent } from '../../ui/dropdown/dropdown-item/dropdown-item.component-two';
+import { AuthService } from '../../../../core/services/auth.service';
+import { Observable } from 'rxjs';
+import { User } from '../../../../core/services/auth.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-user-dropdown',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    DropdownComponent,
+    DropdownItemTwoComponent,
+    HttpClientModule,
+  ],
   templateUrl: './user-dropdown.component.html',
-  imports:[CommonModule,RouterModule,DropdownComponent,DropdownItemTwoComponent]
 })
-export class UserDropdownComponent {
+export class UserDropdownComponent implements OnInit {
   isOpen = false;
-  User: { username?: string; email?: string; avatar?: string } | null = null;
+  user$!: Observable<User | null>; // ✅ observable directement
+
+  constructor(private authService: AuthService) {
+    this.authService.loadUserFromStorage();
+  }
+
+  ngOnInit(): void {
+    // On récupère directement l’observable depuis le service
+    this.user$ = this.authService.currentUser$;
+  }
 
   toggleDropdown() {
     this.isOpen = !this.isOpen;
   }
-  ngOnInit(): void {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      this.User = JSON.parse(storedUser); // transforme la string en objet
-    }
-  }
+
   closeDropdown() {
     this.isOpen = false;
   }
