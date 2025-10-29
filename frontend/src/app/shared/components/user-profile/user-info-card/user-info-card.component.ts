@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../../services/modal.service';
 import { CommonModule } from '@angular/common';
 import { InputFieldComponent } from '../../form/input/input-field.component';
@@ -16,33 +16,35 @@ import { ModalComponent } from '../../ui/modal/modal.component';
     ModalComponent,
   ],
   templateUrl: './user-info-card.component.html',
-  styles: ``
+  styles: ``,
 })
-export class UserInfoCardComponent {
-
+export class UserInfoCardComponent implements OnInit {
   constructor(public modal: ModalService) {}
 
   isOpen = false;
-  openModal() { this.isOpen = true; }
-  closeModal() { this.isOpen = false; }
+  user: { username: string; email: string } | null = null;
 
-  user = {
-    firstName: 'Musharof',
-    lastName: 'Chowdhury',
-    email: 'randomuser@pimjo.com',
-    phone: '+09 363 398 46',
-    bio: 'Team Manager',
-    social: {
-      facebook: 'https://www.facebook.com/PimjoHQ',
-      x: 'https://x.com/PimjoHQ',
-      linkedin: 'https://www.linkedin.com/company/pimjo',
-      instagram: 'https://instagram.com/PimjoHQ',
-    },
-  };
+  openModal() {
+    this.isOpen = true;
+  }
+
+  closeModal() {
+    this.isOpen = false;
+  }
+
+  ngOnInit(): void {
+    const storedUser = localStorage.getItem('user');
+
+    if (storedUser) {
+      this.user = JSON.parse(storedUser);
+      console.log('✅ Utilisateur chargé depuis localStorage :', this.user);
+    } else {
+      console.warn('⚠️ Aucun utilisateur trouvé dans le localStorage');
+    }
+  }
 
   handleSave() {
-    // Handle save logic here
-    console.log('Saving changes...');
+    console.log('💾 Saving changes...');
     this.modal.closeModal();
   }
 }

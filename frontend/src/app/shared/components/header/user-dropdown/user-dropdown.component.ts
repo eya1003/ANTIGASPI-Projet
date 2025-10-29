@@ -11,11 +11,17 @@ import { DropdownItemTwoComponent } from '../../ui/dropdown/dropdown-item/dropdo
 })
 export class UserDropdownComponent {
   isOpen = false;
+  User: { username?: string; email?: string; avatar?: string } | null = null;
 
   toggleDropdown() {
     this.isOpen = !this.isOpen;
   }
-
+  ngOnInit(): void {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      this.User = JSON.parse(storedUser); // transforme la string en objet
+    }
+  }
   closeDropdown() {
     this.isOpen = false;
   }

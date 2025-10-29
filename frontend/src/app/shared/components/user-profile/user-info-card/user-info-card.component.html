@@ -7,18 +7,10 @@
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
         <div>
           <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-            First Name
+            Username
           </p>
           <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-            {{ user.firstName }}
-          </p>
-        </div>
-        <div>
-          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-            Last Name
-          </p>
-          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-            {{ user.lastName }}
+            {{ user?.username || 'Utilisateur Inconnu' }}
           </p>
         </div>
         <div>
@@ -26,27 +18,13 @@
             Email address
           </p>
           <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-            {{ user.email }}
-          </p>
-        </div>
-        <div>
-          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-            Phone
-          </p>
-          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-            {{ user.phone }}
-          </p>
-        </div>
-        <div>
-          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-            Bio
-          </p>
-          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
-            {{ user.bio }}
+            {{ user?.email || 'email@example.com' }}
           </p>
         </div>
       </div>
     </div>
+
+    <!-- Bouton pour ouvrir la modale -->
     <button
       (click)="openModal()"
       class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
@@ -76,73 +54,44 @@
     (close)="closeModal()"
     className="max-w-[700px] m-4"
   >
-    <div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-      <div class="px-2 pr-14">
-        <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-          Edit Personal Information
-        </h4>
-        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-          Update your details to keep your profile up-to-date.
-        </p>
+    <form class="flex flex-col" (ngSubmit)="handleSave()">
+      <div class="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
+        <div class="mt-7">
+          <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+            Personal Information
+          </h5>
+          <div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+            <!-- Username -->
+            <div class="col-span-2 lg:col-span-1">
+              <app-label>Username</app-label>
+              <app-input-field
+                type="text"
+                [value]="user?.username ?? ''"
+                (valueChange)="user!.username = $event.toString()"
+              />
+            </div>
+
+            <!-- Email -->
+            <div class="col-span-2 lg:col-span-1">
+              <app-label>Email</app-label>
+              <app-input-field
+                type="text"
+                [value]="user?.email ?? ''"
+                (valueChange)="user!.email = $event.toString()"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-      <form class="flex flex-col" (ngSubmit)="handleSave()">
-        <div class="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-          <div>
-            <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-              Social Links
-            </h5>
-            <div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-              <div>
-                <app-label>Facebook</app-label>
-                <app-input-field type="text" [value]="user.social.facebook" />
-              </div>
-              <div>
-                <app-label>X.com</app-label>
-                <app-input-field type="text" [value]="user.social.x" />
-              </div>
-              <div>
-                <app-label>Linkedin</app-label>
-                <app-input-field type="text" [value]="user.social.linkedin" />
-              </div>
-              <div>
-                <app-label>Instagram</app-label>
-                <app-input-field type="text" [value]="user.social.instagram" />
-              </div>
-            </div>
-          </div>
-          <div class="mt-7">
-            <h5 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-              Personal Information
-            </h5>
-            <div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-              <div class="col-span-2 lg:col-span-1">
-                <app-label>First Name</app-label>
-                <app-input-field type="text" [value]="user.firstName" />
-              </div>
-              <div class="col-span-2 lg:col-span-1">
-                <app-label>Last Name</app-label>
-                <app-input-field type="text" [value]="user.lastName" />
-              </div>
-              <div class="col-span-2 lg:col-span-1">
-                <app-label>Email Address</app-label>
-                <app-input-field type="text" [value]="user.email" />
-              </div>
-              <div class="col-span-2 lg:col-span-1">
-                <app-label>Phone</app-label>
-                <app-input-field type="text" [value]="user.phone" />
-              </div>
-              <div class="col-span-2">
-                <app-label>Bio</app-label>
-                <app-input-field type="text" [value]="user.bio" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-          <app-button size="sm" variant="outline" (btnClick)="closeModal()">Close</app-button>
-          <app-button size="sm" (btnClick)="handleSave()">Save Changes</app-button>
-        </div>
-      </form>
-    </div>
+
+      <div class="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+        <app-button size="sm" variant="outline" (btnClick)="closeModal()">
+          Close
+        </app-button>
+        <app-button size="sm" (btnClick)="handleSave()">
+          Save Changes
+        </app-button>
+      </div>
+    </form>
   </app-modal>
 </div>

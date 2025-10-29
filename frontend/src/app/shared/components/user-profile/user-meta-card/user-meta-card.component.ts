@@ -1,49 +1,37 @@
-import { Component } from '@angular/core';
-import { InputFieldComponent } from './../../form/input/input-field.component';
+import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../../services/modal.service';
 import { CommonModule } from '@angular/common';
-import { ModalComponent } from '../../ui/modal/modal.component';
-import { ButtonComponent } from '../../ui/button/button.component';
 
 @Component({
   selector: 'app-user-meta-card',
+  standalone: true,
   imports: [
-    CommonModule,
-    ModalComponent,
-    InputFieldComponent,
-    ButtonComponent,
+    CommonModule
   ],
   templateUrl: './user-meta-card.component.html',
   styles: ``
 })
-export class UserMetaCardComponent {
-
+export class UserMetaCardComponent implements OnInit {
   constructor(public modal: ModalService) {}
 
   isOpen = false;
+  user: { _id?: string; username?: string; email?: string } | null = null;
+
   openModal() { this.isOpen = true; }
   closeModal() { this.isOpen = false; }
 
-  // Example user data (could be made dynamic)
-  user = {
-    firstName: 'Musharof',
-    lastName: 'Chowdhury',
-    role: 'Team Manager',
-    location: 'Arizona, United States',
-    avatar: '/images/user/owner.jpg',
-    social: {
-      facebook: 'https://www.facebook.com/PimjoHQ',
-      x: 'https://x.com/PimjoHQ',
-      linkedin: 'https://www.linkedin.com/company/pimjo',
-      instagram: 'https://instagram.com/PimjoHQ',
-    },
-    email: 'randomuser@pimjo.com',
-    phone: '+09 363 398 46',
-    bio: 'Team Manager',
-  };
+  ngOnInit(): void {
+    const storedUser = localStorage.getItem('user');
+
+    if (storedUser) {
+      this.user = JSON.parse(storedUser);
+      console.log('✅ Utilisateur chargé depuis localStorage :', this.user);
+    } else {
+      console.warn('⚠️ Aucun utilisateur trouvé dans le localStorage');
+    }
+  }
 
   handleSave() {
-    // Handle save logic here
     console.log('Saving changes...');
     this.modal.closeModal();
   }

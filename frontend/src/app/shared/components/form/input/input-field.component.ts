@@ -70,8 +70,15 @@ export class InputFieldComponent {
 
   onInput(target: EventTarget | null) {
     const input = target as HTMLInputElement;
-    const val = this.type === 'number' ? +input.value : input.value;
+
+  if (this.type === 'number') {
+    const val = +input.value; // conversion en nombre
     this.value = val;
     this.valueChange.emit(val);
+  } else {
+    const val = input.value; // texte → string
+    this.value = val;
+    this.valueChange.emit(val as string); // force string
+  }
   }
 }
