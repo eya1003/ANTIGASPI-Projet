@@ -1,50 +1,55 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalService } from '../../../services/modal.service';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { ButtonComponent } from '../../ui/button/button.component';
 import { LabelComponent } from '../../form/label/label.component';
 import { ModalComponent } from '../../ui/modal/modal.component';
+import { ModalService } from '../../../services/modal.service';
+import { AuthService, User } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-info-card',
+  standalone: true,
   imports: [
     CommonModule,
+    HttpClientModule, 
     InputFieldComponent,
     ButtonComponent,
     LabelComponent,
     ModalComponent,
   ],
+  providers: [AuthService, HttpClient],
   templateUrl: './user-info-card.component.html',
-  styles: ``,
+  styles: [``],
 })
 export class UserInfoCardComponent implements OnInit {
-  constructor(public modal: ModalService) {}
-
   isOpen = false;
-  user: { username: string; email: string } | null = null;
+  user: User | null = null;
 
-  openModal() {
-    this.isOpen = true;
-  }
-
-  closeModal() {
-    this.isOpen = false;
-  }
+  constructor(public modal: ModalService, private authService: AuthService) {}
 
   ngOnInit(): void {
     const storedUser = localStorage.getItem('user');
-
-    if (storedUser) {
-      this.user = JSON.parse(storedUser);
-      console.log('✅ Utilisateur chargé depuis localStorage :', this.user);
-    } else {
-      console.warn('⚠️ Aucun utilisateur trouvé dans le localStorage');
-    }
+    if (storedUser) this.user = JSON.parse(storedUser);
   }
 
+  openModal() { this.isOpen = true; }
+  closeModal() { this.isOpen = false; }
+
   handleSave() {
-    console.log('💾 Saving changes...');
-    this.modal.closeModal();
+    if (!this.user?._id) return;
+
+    this.authService.updateUser(this.user._id, {
+      username: this.user.username,
+      email: this.user.email,
+    }).subscribe({
+      next: updatedUser => {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        this.user = updatedUser;
+        this.closeModal();
+      },
+      error: err => console.error(err),
+    });
   }
 }
