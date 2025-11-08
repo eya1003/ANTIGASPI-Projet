@@ -16,6 +16,22 @@ export class User {
 
   @Prop({ default: [] })
   fridge: string[]; // IDs des produits du frigo virtuel
+
+  @Prop({ default: false })
+  verified: boolean;
+
+  @Prop({ type: String, default: null })
+  verificationToken: string | null;
+
+  @Prop({ type: Date, default: null })
+  verificationExpires: Date | null;
+
+  @Prop({ type: String, default: null })
+  resetPasswordToken: string | null;
+
+  @Prop({ type: Date, default: null })
+  resetPasswordExpires: Date | null;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
