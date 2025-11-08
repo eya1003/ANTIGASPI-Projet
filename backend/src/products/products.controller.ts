@@ -1,13 +1,35 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Product } from './schemas/product.schema';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('products')
 export class ProductsController {
-    constructor(private readonly productsService: ProductsService) {}
+    constructor(private readonly productsService: ProductsService) { }
 
-    @Post('addProduct')
-    async addProduct(@Body() productData: Partial<Product>): Promise<Product> {
+    @Post('addProductWithImage')
+    @UseInterceptors(
+        FileInterceptor('image', {
+            storage: diskStorage({
+                destination: './uploads',
+                filename: (req, file, cb) => {
+                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                    const ext = extname(file.originalname);
+                    cb(null, `product-${uniqueSuffix}${ext}`);
+                },
+            }),
+        }),
+    )
+    async addProductWithImage(
+        @UploadedFile() image: Express.Multer.File,
+        @Body() productData: Partial<Product>,
+    ) {
+        if (image) {
+            productData.image = image.filename; 
+        }
+
         return this.productsService.addProduct(productData);
     }
 

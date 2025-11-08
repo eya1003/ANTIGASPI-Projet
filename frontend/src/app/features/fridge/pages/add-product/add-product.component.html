@@ -1,0 +1,44 @@
+<app-component-card title="Ajouter un produit au frigo">
+  <form [formGroup]="productForm" (ngSubmit)="handleSubmit()" class="space-y-6" enctype="multipart/form-data">
+    <div>
+      <app-label for="name">Nom du produit</app-label>
+      <app-input-field id="name" type="text" formControlName="name" placeholder="Ex : Lait" />
+    </div>
+
+    <div>
+      <app-label for="quantity">Quantité</app-label>
+      <app-input-field id="quantity" type="number" formControlName="quantity" placeholder="2" />
+    </div>
+
+    <div>
+      <app-label>Catégorie</app-label>
+      <app-select
+        [options]="categories"
+        placeholder="Choisir une catégorie"
+        [value]="productForm.get('category')?.value"
+        (valueChange)="handleSelectChange($event)"
+      ></app-select>
+    </div>
+
+    <div>
+      <app-date-picker
+        id="expiryDate"
+        label="Date d’expiration"
+        placeholder="Sélectionner une date"
+        (dateChange)="handleDateChange($event)"
+      ></app-date-picker>
+    </div>
+
+    <div>
+      <app-label for="image">Image du produit</app-label>
+      <input type="file" id="image" (change)="onFileSelected($event)" />
+    </div>
+
+    <button
+      type="submit"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg shadow"
+    >
+      Ajouter le produit
+    </button>
+  </form>
+</app-component-card>

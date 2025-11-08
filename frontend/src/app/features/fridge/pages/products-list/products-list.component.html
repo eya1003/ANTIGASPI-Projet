@@ -1,0 +1,25 @@
+<app-component-card title="Fridge">
+
+<div class="space-y-4">
+  <h2 class="text-xl font-semibold">Mes produits</h2>
+
+  <div *ngIf="loading">Chargement...</div>
+  <div *ngIf="errorMessage" class="text-red-500">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && products.length === 0">
+    Aucun produit trouvé.
+  </div>
+
+  <div *ngIf="!loading && products.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngFor="let product of products" class="border p-4 rounded-lg shadow">
+      <h3 class="font-bold text-lg">{{ product.name }}</h3>
+      <p>Quantité: {{ product.quantity }}</p>
+      <p>Catégorie: {{ product.category }}</p>
+      <p>Date d’expiration: {{ product.expiryDate | date:'shortDate' }}</p>
+      <div *ngIf="product.image">
+        <img [src]="'http://localhost:3000/uploads/' + product.image" alt="{{ product.name }}" />
+      </div>
+    </div>
+  </div>
+</div>
+</app-component-card>

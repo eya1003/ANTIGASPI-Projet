@@ -11,7 +11,7 @@ export interface User {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
   private apiUrl = `${environment.apiUrl}/users`;
 
   // BehaviorSubject pour stocker l'utilisateur courant
@@ -22,9 +22,9 @@ export class AuthService {
   currentUser$ = this.currentUserSubject.asObservable();
 
   loadUserFromStorage() {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  this.currentUserSubject.next(user);
-}
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    this.currentUserSubject.next(user);
+  }
 
   login(data: { email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, data).pipe(
@@ -38,23 +38,27 @@ export class AuthService {
   }
 
   updateUser(id: string, updateData: Partial<User>): Observable<User> {
-  return this.http.put<User>(`${this.apiUrl}/${id}`, updateData).pipe(
-    tap(updatedUser => {
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      this.currentUserSubject.next(updatedUser); // ✅ update direct
-    })
-  );
-}
-signup(data: { username: string; email: string; password: string }): Observable<User> {
-  return this.http.post<User>(`${this.apiUrl}/signup`, data).pipe(
-    tap((newUser) => {
-      // Sauvegarde dans le localStorage si besoin
-      //localStorage.setItem('user', JSON.stringify(newUser));
-      this.currentUserSubject.next(newUser);
-      console.log('✅ Nouvel utilisateur enregistré :', newUser);
-    })
-  );
-}
+    return this.http.put<User>(`${this.apiUrl}/${id}`, updateData).pipe(
+      tap(updatedUser => {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        this.currentUserSubject.next(updatedUser); // ✅ update direct
+      })
+    );
+  }
+  signup(data: { username: string; email: string; password: string }): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/signup`, data).pipe(
+      tap((newUser) => {
+        // Sauvegarde dans le localStorage si besoin
+        //localStorage.setItem('user', JSON.stringify(newUser));
+        this.currentUserSubject.next(newUser);
+        console.log('✅ Nouvel utilisateur enregistré :', newUser);
+      })
+    );
+  }
+
+  verifyEmail(token: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/verify?token=${token}`);
+  }
 
 
   logout() {
