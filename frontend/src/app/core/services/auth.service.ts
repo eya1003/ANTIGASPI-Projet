@@ -25,6 +25,10 @@ export class AuthService {
     const user = JSON.parse(localStorage.getItem('user') || 'null');
     this.currentUserSubject.next(user);
   }
+  forgotPassword(email: string) {
+  return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+}
+
 
   login(data: { email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, data).pipe(
@@ -55,6 +59,11 @@ export class AuthService {
       })
     );
   }
+
+  resetPassword(token: string, newPassword: string) {
+  return this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword });
+}
+
 
   verifyEmail(token: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/verify?token=${token}`);

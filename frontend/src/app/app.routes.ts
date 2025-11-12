@@ -19,6 +19,8 @@ import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
 import { VerifyComponent } from './features/auth/pages/verify/verify.component';
 import { AddProductComponent } from './features/fridge/pages/add-product/add-product.component';
 import { ProductsListComponent } from './features/fridge/pages/products-list/products-list.component';
+import { ForgotPasswordFormComponent } from './shared/components/auth/forget-password/forgot-password-form.component';
+import { ResetPasswordFormComponent } from './shared/components/auth/reset-password-form/reset-password-form.component';
 
 export const routes: Routes = [
   {
@@ -57,6 +59,8 @@ export const routes: Routes = [
         component: ProductsListComponent,
         title: 'ANTIGASPI',
       },
+
+
       // support tickets
       {
         path: 'invoice',
@@ -112,9 +116,15 @@ export const routes: Routes = [
     component: SignInComponent,
     title: 'ANTIGASPI',
   },
+  { path: 'reset-password', component: ResetPasswordFormComponent },
   {
     path: 'signup',
     component: SignUpComponent,
+    title: 'ANTIGASPI',
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordFormComponent,
     title: 'ANTIGASPI',
   },
   {
