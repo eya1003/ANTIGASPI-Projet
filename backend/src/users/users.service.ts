@@ -106,17 +106,44 @@ export class UsersService {
     }
 
     const verifyUrl = `http://localhost:4200/verify?token=${token}`;
+
     const mailOptions = {
       from: process.env.user,
       to: email,
-      subject: 'Vérification de votre compte',
+      subject: 'Vérification de votre compte ANTIGASPI',
       html: `
-        <p>Bonjour,</p>
-        <p>Cliquez sur le bouton ci-dessous pour activer votre compte :</p>
-        <a href="${verifyUrl}" style="background-color:#007bff;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Activer mon compte</a>
-        <p>Ce lien est valable pendant 2 heures.</p>
-      `,
+    <div style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; text-align: center;">
+        <h2 style="color: #28a745; margin-bottom: 20px;">Bienvenue sur ANTIGASPI !</h2>
+        <p style="font-size: 16px; color: #333;">Merci de vous être inscrit. Pour activer votre compte, cliquez sur le bouton ci-dessous :</p>
+
+        <a href="${verifyUrl}" style="
+          display: inline-block;
+          margin: 20px 0;
+          background-color: #28a745;
+          color: white;
+          padding: 12px 25px;
+          font-size: 16px;
+          font-weight: bold;
+          text-decoration: none;
+          border-radius: 8px;
+        ">
+          Activer mon compte
+        </a>
+
+        <p style="font-size: 14px; color: #555;">
+        </p>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+        <p style="font-size: 12px; color: #999;">
+          Si vous n'avez pas créé ce compte, ignorez ce message.
+        </p>
+      </div>
+    </div>
+  `,
     };
+
 
     console.log('✉️ MailOptions préparés:', { to: mailOptions.to, subject: mailOptions.subject });
 
@@ -190,15 +217,44 @@ export class UsersService {
     const mailOptions = {
       from: process.env.user,
       to: email,
-      subject: 'Réinitialisation de votre mot de passe',
+      subject: 'Réinitialisation de votre mot de passe ANTIGASPI',
       html: `
-      <p>Bonjour,</p>
-      <p>Vous avez demandé à réinitialiser votre mot de passe.</p>
-      <p>Cliquez ci-dessous pour le faire :</p>
-      <a href="${resetUrl}" style="background-color:#28a745;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Réinitialiser mon mot de passe</a>
-      <p>Ce lien est valable 1 heure.</p>
-    `,
+    <div style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; text-align: center;">
+        <h2 style="color: #28a745; margin-bottom: 20px;">Réinitialisation de mot de passe</h2>
+        <p style="font-size: 16px; color: #333;">
+          Vous avez demandé à réinitialiser votre mot de passe pour votre compte ANTIGASPI.
+          Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :
+        </p>
+
+        <a href="${resetUrl}" style="
+          display: inline-block;
+          margin: 20px 0;
+          background-color: #28a745;
+          color: white;
+          padding: 12px 25px;
+          font-size: 16px;
+          font-weight: bold;
+          text-decoration: none;
+          border-radius: 8px;
+        ">
+          Réinitialiser mon mot de passe
+        </a>
+
+        <p style="font-size: 14px; color: #555;">
+          
+        </p>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+        <p style="font-size: 12px; color: #999;">
+          Si vous n'avez pas demandé de réinitialisation, ignorez ce message ou contactez le support.
+        </p>
+      </div>
+    </div>
+  `,
     };
+
 
     await transporter.sendMail(mailOptions);
     return { message: 'Un e-mail de réinitialisation a été envoyé' };

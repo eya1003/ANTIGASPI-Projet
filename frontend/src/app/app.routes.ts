@@ -14,13 +14,13 @@ import { BadgesComponent } from './pages/ui-elements/badges/badges.component';
 import { ButtonsComponent } from './pages/ui-elements/buttons/buttons.component';
 import { ImagesComponent } from './pages/ui-elements/images/images.component';
 import { VideosComponent } from './pages/ui-elements/videos/videos.component';
-import { SignInComponent } from './pages/auth-pages/sign-in/sign-in.component';
-import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
-import { VerifyComponent } from './features/auth/pages/verify/verify.component';
+import { VerifyComponent } from './shared/components/auth/verify/verify.component';
 import { AddProductComponent } from './features/fridge/pages/add-product/add-product.component';
 import { ProductsListComponent } from './features/fridge/pages/products-list/products-list.component';
 import { ForgotPasswordFormComponent } from './shared/components/auth/forget-password/forgot-password-form.component';
 import { ResetPasswordFormComponent } from './shared/components/auth/reset-password-form/reset-password-form.component';
+import { SigninFormComponent } from './shared/components/auth/signin-form/signin-form.component';
+import { SignupFormComponent } from './shared/components/auth/signup-form/signup-form.component';
 
 export const routes: Routes = [
   {
@@ -113,13 +113,13 @@ export const routes: Routes = [
   // auth pages
   {
     path: 'signin',
-    component: SignInComponent,
+    component: SigninFormComponent,
     title: 'ANTIGASPI',
   },
   { path: 'reset-password', component: ResetPasswordFormComponent },
   {
     path: 'signup',
-    component: SignUpComponent,
+    component: SignupFormComponent,
     title: 'ANTIGASPI',
   },
   {

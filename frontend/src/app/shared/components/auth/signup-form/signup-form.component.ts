@@ -6,6 +6,7 @@ import { LabelComponent } from '../../form/label/label.component';
 import { CheckboxComponent } from '../../form/input/checkbox.component';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { AuthService, User } from '../../../../core/services/auth.service';
+import { ButtonComponent } from '../../ui/button/button.component';
 
 @Component({
   selector: 'app-signup-form',
@@ -15,6 +16,7 @@ import { AuthService, User } from '../../../../core/services/auth.service';
     FormsModule,
     RouterModule,
     LabelComponent,
+    ButtonComponent,
     CheckboxComponent,
     InputFieldComponent,
   ],
