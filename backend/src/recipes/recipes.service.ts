@@ -364,8 +364,9 @@ export class RecipesService {
         const userProducts = await this.productModel.find({ user: userId });
         const userNames = userProducts.map(p => p.name.toLowerCase().trim());
 
-        // 2) Recettes locales contenant l'ingrédient (par rapport à ingredientList OR ingredients populated)
+        // 2) Recettes locales contenant l'ingrédient
         const allRecipes = await this.recipeModel.find().populate('ingredients').exec();
+        const seenTitles = new Set<string>();
 
         const localMatches = allRecipes
             .filter((recipe: any) => {
@@ -375,13 +376,12 @@ export class RecipesService {
                 return combined.includes(normalized);
             })
             .map((recipe: any) => {
-                const ingredientNames = (recipe.ingredients ?? [])
-                    .map((i: any) => (i.name || '').toLowerCase().trim());
+                if (seenTitles.has(recipe.title)) return null; // ignorer doublon
+                seenTitles.add(recipe.title);
 
+                const ingredientNames = (recipe.ingredients ?? []).map((i: any) => (i.name || '').toLowerCase().trim());
                 const listNames = (recipe.ingredientList ?? []).map((s: string) => s.toLowerCase().trim());
-
                 const allIngredientNames = Array.from(new Set([...ingredientNames, ...listNames]));
-
                 const missing = allIngredientNames.filter(i => !userNames.includes(i));
 
                 return {
@@ -393,31 +393,36 @@ export class RecipesService {
                     missingIngredients: missing,
                     fullyMatched: missing.length === 0
                 };
-            });
+            })
+            .filter(Boolean); // enlever les nulls
 
-
-        // 3) Recettes via TheMealDB (externes) — on récupère des plats contenant l'ingrédient
+        // 3) Recettes externes
         const externalResults: any[] = [];
+        const seenIds = new Set<string>();
+
         try {
             const filterRes = await axios.get(
                 `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(normalized)}`
             );
             const meals = filterRes.data.meals || [];
-            // obtenir détails pour chaque meal (limiter par ex. 10 pour performance)
+
             for (const meal of meals.slice(0, 10)) {
+                if (seenIds.has(meal.idMeal)) continue;
                 try {
                     const lookup = await axios.get(
                         `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
                     );
                     const full = lookup.data.meals?.[0];
                     if (!full) continue;
-                    // build simplified object
+
                     const ingredientList: string[] = [];
                     for (let i = 1; i <= 20; i++) {
                         const ing = full[`strIngredient${i}`];
                         if (ing && ing.trim() !== '') ingredientList.push(ing.toLowerCase().trim());
                     }
+
                     const missing = ingredientList.filter(i => !userNames.includes(i));
+
                     externalResults.push({
                         idMeal: full.idMeal,
                         title: full.strMeal,
@@ -428,10 +433,11 @@ export class RecipesService {
                         source: 'mealdb',
                         details: full
                     });
-                } catch (e) { /* ignore single meal error */ }
+
+                    seenIds.add(full.idMeal);
+                } catch (e) { /* ignorer erreur d'une seule meal */ }
             }
         } catch (e) {
-            // ignore external API error but log
             console.error('MealDB error', e?.message ?? e);
         }
 
@@ -444,5 +450,6 @@ export class RecipesService {
             external: externalResults
         };
     }
+
 
 }
