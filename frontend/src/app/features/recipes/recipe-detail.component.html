@@ -1,0 +1,38 @@
+<div *ngIf="loading" class="p-6">Chargement...</div>
+<div *ngIf="error" class="p-6 text-red-600">
+    {{ error }}
+    <button routerLink="/recipes" class="ml-4 px-3 py-1 bg-gray-300 rounded">Retour aux recettes</button>
+</div>
+
+
+<div *ngIf="!loading && recipe" class="max-w-3xl mx-auto p-6 space-y-4 bg-white rounded shadow">
+    <h1 class="text-2xl font-bold">{{ recipe.title }}</h1>
+    <img *ngIf="recipe.image" [src]="recipe.image" class="w-full h-64 object-cover rounded" />
+
+    <p *ngIf="recipe.category || recipe.area" class="text-gray-600">
+        <span *ngIf="recipe.category">Catégorie: {{ recipe.category }}</span>
+        <span *ngIf="recipe.area"> | Origine: {{ recipe.area }}</span>
+    </p>
+
+    <h2 class="font-semibold mt-4">Ingrédients</h2>
+    <ul class="list-disc list-inside">
+        <li *ngFor="let ing of recipe.ingredientList || []; let i = index">
+            {{ ing }} - {{ recipe.measuresList?.[i] || '' }}
+        </li>
+    </ul>
+
+    <h2 class="font-semibold mt-4">Instructions</h2>
+    <p class="whitespace-pre-line">{{ recipe.instructions || 'Instructions non disponibles' }}</p>
+
+    <div class="mt-4 flex gap-2">
+        <button *ngIf="!isExternal" (click)="cookRecipe()" class="px-3 py-1 bg-green-600 text-white rounded">
+            Marquer cuisinée
+        </button>
+        <button (click)="openExternal()" class="px-3 py-1 bg-blue-500 text-white rounded">
+            Voir la source
+        </button>
+        <button *ngIf="recipe.youtubeUrl" (click)="openExternal()" class="px-3 py-1 bg-red-600 text-white rounded">
+            Voir la vidéo
+        </button>
+    </div>
+</div>

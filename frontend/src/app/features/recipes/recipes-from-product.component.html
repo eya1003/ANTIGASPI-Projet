@@ -21,8 +21,9 @@
                             Manquants: {{ r.missingIngredients.join(', ') }}
                         </p>
                         <div class="mt-2 flex gap-2">
-                            <button (click)="viewRecipeLocal(r.id)"
-                                class="px-2 py-1 bg-blue-500 text-white rounded">Voir détails</button>
+                            <!-- routerLink vers la page détail -->
+                            <a [routerLink]="['/recipes', r.id]" class="px-2 py-1 bg-blue-500 text-white rounded">Voir
+                                détails</a>
                             <button (click)="cookRecipeLocal(r)"
                                 class="px-2 py-1 bg-green-600 text-white rounded">Marquer cuisinée</button>
                         </div>
@@ -48,8 +49,12 @@
                             Manquants: {{ e.missingIngredients.join(', ') }}
                         </p>
                         <div class="mt-2 flex gap-2">
+                            <!-- routerLink vers la page détail si on veut afficher les détails internes -->
+                            <a [routerLink]="['/recipes', e.idMeal]"
+                                class="px-2 py-1 bg-blue-500 text-white rounded">Voir détails</a>
+                            <!-- bouton pour ouvrir le lien externe comme avant -->
                             <button (click)="viewRecipeExternal(e)"
-                                class="px-2 py-1 bg-blue-500 text-white rounded">Ouvrir recette</button>
+                                class="px-2 py-1 bg-gray-500 text-white rounded">Ouvrir source</button>
                         </div>
                     </div>
                 </div>

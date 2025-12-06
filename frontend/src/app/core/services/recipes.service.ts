@@ -46,5 +46,11 @@ export class RecipesService {
         return this.http.get(`${this.apiUrl}/bySingleProduct/${userId}/${encodeURIComponent(productName)}`);
     }
 
+    getRecipeById(id: string) {
+        return this.http.get(`${this.apiUrl}/${id}`);
+    }
+    getExternalRecipeById(idMeal: string) {
+        return this.http.get(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${idMeal}`);
+    }
 
 }

@@ -23,6 +23,7 @@ import { SigninFormComponent } from './shared/components/auth/signin-form/signin
 import { SignupFormComponent } from './shared/components/auth/signup-form/signup-form.component';
 import { RecipesListComponent } from './features/recipes/recipes-list.component';
 import { RecipesFromProductComponent } from './features/recipes/recipes-from-product.component';
+import { RecipeDetailComponent } from './features/recipes/recipe-detail.component';
 
 export const routes: Routes = [
   {
@@ -54,6 +55,16 @@ export const routes: Routes = [
       {
         path: 'fridge/add',
         component: AddProductComponent,
+        title: 'ANTIGASPI',
+      },
+      {
+        path: 'recipes/:id',
+        component: RecipeDetailComponent,
+        title: 'ANTIGASPI',
+      },
+      {
+        path: 'recipes/external/:id',
+        component: RecipeDetailComponent,
         title: 'ANTIGASPI',
       },
       {
