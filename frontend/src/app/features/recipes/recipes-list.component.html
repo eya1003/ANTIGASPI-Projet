@@ -1,0 +1,37 @@
+<div *ngIf="loading" class="text-gray-500">Chargement...</div>
+<div *ngIf="errorMessage" class="text-red-500 font-medium">{{ errorMessage }}</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4" *ngIf="!loading && recipes.length > 0">
+    <div *ngFor="let recipe of recipes"
+        class="bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-4 flex flex-col items-center text-center">
+
+        <div *ngIf="recipe.image" class="w-32 h-32 mb-3">
+            <img [src]="recipe.image" alt="{{ recipe.title }}" class="w-full h-full object-contain rounded-md" />
+        </div>
+
+        <h3 class="font-semibold text-lg text-gray-800">{{ recipe.title }}</h3>
+        <p *ngIf="recipe.category" class="text-gray-600 text-sm">Catégorie: {{ recipe.category }}</p>
+        <p *ngIf="recipe.area" class="text-gray-600 text-sm">Origine: {{ recipe.area }}</p>
+
+        <!-- Badge -->
+        <p *ngIf="recipe.fullyMatched" class="mt-2 font-bold text-green-600">Tous les ingrédients disponibles</p>
+        <p *ngIf="recipe.missingIngredients?.length" class="mt-2 font-bold text-orange-600">
+            Ingrédients manquants: {{ recipe.missingIngredients?.join(', ') }}
+        </p>
+
+        <div class="mt-3">
+            <button (click)="viewRecipe(recipe._id)" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Voir détails
+            </button>
+        </div>
+
+        <button (click)="cookRecipe(recipe)" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 mt-2">
+            Marquer comme cuisinée
+        </button>
+
+    </div>
+</div>
+
+<div *ngIf="!loading && recipes.length === 0" class="text-gray-500 font-medium text-center mt-4">
+    Aucune recette trouvée.
+</div>

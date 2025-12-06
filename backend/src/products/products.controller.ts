@@ -22,17 +22,24 @@ export class ProductsController {
             }),
         }),
     )
+
+
     async addProductWithImage(
         @UploadedFile() image: Express.Multer.File,
         @Body() productData: Partial<Product>,
     ) {
         if (image) {
-            productData.image = image.filename; 
+            productData.image = image.filename;
         }
 
         return this.productsService.addProduct(productData);
     }
 
+    
+    @Get('alerts/:userId')
+    async getExpiringAlerts(@Param('userId') userId: string) {
+        return this.productsService.getUserExpiringAlerts(userId);
+    }
     @Get('getAll')
     async findAll(): Promise<Product[]> {
         return this.productsService.findAll();

@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { RecipesModule } from './recipes/recipes.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { RecipesModule } from './recipes/recipes.module';
     
     // On configure Mongoose de manière asynchrone avec la variable d'environnement
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],        // On importe ConfigModule pour accéder à ConfigService
+      imports: [ConfigModule,     ScheduleModule.forRoot(),
+],        // On importe ConfigModule pour accéder à ConfigService
       inject: [ConfigService],        // On injecte ConfigService dans la factory
       useFactory: async (configService: ConfigService) => {
         // On récupère l'URI de connexion MongoDB depuis le fichier .env

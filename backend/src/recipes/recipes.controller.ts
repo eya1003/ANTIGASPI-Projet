@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
+import {
+    Controller, Get, Post, Param, Body, Delete
+} from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { Recipe } from './schemas/recipe.schema';
 
@@ -6,29 +8,97 @@ import { Recipe } from './schemas/recipe.schema';
 export class RecipesController {
     constructor(private readonly recipesService: RecipesService) { }
 
-    // CRUD local
+    // ---------------------------------------------------
+    // 1. IMPORT AUTOMATIQUE — 1 recette par produit
+    // ---------------------------------------------------
+    @Get('importOneRecipePerProduct/:userId')
+    importRecipePerProduct(@Param('userId') userId: string) {
+        return this.recipesService.importOneRecipePerProduct(userId);
+    }
+
+    // ---------------------------------------------------
+    // 2. RECETTES réalisables à 100%
+    // ---------------------------------------------------
+    @Get('byExactProducts/:userId')
+    recipesExact(@Param('userId') userId: string) {
+        return this.recipesService.recipesUsingExistingProducts(userId);
+    }
+
+    // ---------------------------------------------------
+    // 3. RECETTES réalisables + ingrédients manquants
+    // ---------------------------------------------------
+    @Get('byAllProductsPlusExtras/:userId')
+    recipesWithExtras(@Param('userId') userId: string) {
+        return this.recipesService.recipesUsingAllProductsPlusExtras(userId);
+    }
+
+    // ---------------------------------------------------
+    // 4. Associer "1 Recette → 1 Produit"
+    // ---------------------------------------------------
+    @Get('oneRecipePerProduct/:userId')
+    recipePerProduct(@Param('userId') userId: string) {
+        return this.recipesService.recipePerProduct(userId);
+    }
+
+    // ---------------------------------------------------
+    // 5. Recommandation via API externe : TheMealDB
+    // ---------------------------------------------------
+    @Get('byProductsMeal/:userId')
+    recommendMeal(@Param('userId') userId: string) {
+        return this.recipesService.recommendRecipesMeal(userId);
+    }
+
+    // recipes.controller.ts (ajouter)
+    @Get('bySingleProduct/:userId/:productName')
+    getRecipesBySingleProduct(
+        @Param('userId') userId: string,
+        @Param('productName') productName: string
+    ) {
+        return this.recipesService.getRecipesBySingleIngredient(userId, productName);
+    }
+
+
+    // ---------------------------------------------------
+    // 11. Marquer une recette comme cuisinée
+    // ---------------------------------------------------
+    @Post('cook/:userId/:recipeId')
+    cookRecipe(
+        @Param('userId') userId: string,
+        @Param('recipeId') recipeId: string
+    ) {
+        return this.recipesService.cookRecipe(userId, recipeId);
+    }
+
+
+    // ---------------------------------------------------
+    // 6. CRUD : Ajouter une recette
+    // ---------------------------------------------------
     @Post('add')
-    async addRecipe(@Body() recipeData: Partial<Recipe>): Promise<Recipe> {
+    addRecipe(@Body() recipeData: Partial<Recipe>): Promise<Recipe> {
         return this.recipesService.addRecipe(recipeData);
     }
 
+    // ---------------------------------------------------
+    // 7. CRUD : Lire toutes les recettes
+    // ---------------------------------------------------
     @Get('all')
-    async findAll(): Promise<Recipe[]> {
+    findAll(): Promise<Recipe[]> {
         return this.recipesService.findAll();
     }
 
+    // ---------------------------------------------------
+    // 8. CRUD : Lire une recette par ID
+    // ---------------------------------------------------
     @Get(':id')
-    async findOne(@Param('id') id: string): Promise<Recipe> {
+    findOne(@Param('id') id: string) {
         return this.recipesService.findOne(id);
     }
 
+    // ---------------------------------------------------
+    // 9. CRUD : Supprimer une recette
+    // ---------------------------------------------------
     @Delete(':id')
-    async delete(@Param('id') id: string) {
+    delete(@Param('id') id: string) {
         return this.recipesService.delete(id);
-    }
-
-    @Get('byProductsMeal/:userId')
-    async recommendMeal(@Param('userId') userId: string) {
-        return this.recipesService.recommendRecipesMeal(userId);
     }
 }

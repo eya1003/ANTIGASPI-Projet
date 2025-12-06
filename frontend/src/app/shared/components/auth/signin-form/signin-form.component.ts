@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { LabelComponent } from '../../form/label/label.component';
-import { CheckboxComponent } from '../../form/input/checkbox.component';
 import { ButtonComponent } from '../../ui/button/button.component';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { RouterModule } from '@angular/router';
@@ -16,7 +15,6 @@ import { AuthService } from '../../../../core/services/auth.service';
   imports: [
     CommonModule,
     LabelComponent,
-    CheckboxComponent,
     ButtonComponent,
     InputFieldComponent,
     RouterModule,

@@ -1,9 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Recipe, RecipeDocument } from './schemas/recipe.schema';
 import { Product, ProductDocument } from '../products/schemas/product.schema';
 import axios from 'axios';
+
+import {
+    ImportedRecipeResult,
+    RecipeWithMissing,
+    RecipePerProduct,
+} from './types/recipe.types';
 
 @Injectable()
 export class RecipesService {
@@ -11,6 +17,10 @@ export class RecipesService {
         @InjectModel(Recipe.name) private recipeModel: Model<RecipeDocument>,
         @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     ) { }
+
+    // ---------------------------------------------------
+    // 1. CRUD de base
+    // ---------------------------------------------------
 
     async addRecipe(recipeData: Partial<Recipe>): Promise<Recipe> {
         const recipe = new this.recipeModel(recipeData);
@@ -22,78 +32,417 @@ export class RecipesService {
     }
 
     async findOne(id: string): Promise<Recipe> {
-        const recipe = await this.recipeModel.findById(id).populate('ingredients').exec();
+        const recipe = await this.recipeModel.findById(id).populate('ingredients');
         if (!recipe) throw new NotFoundException('Recipe not found');
         return recipe;
     }
 
     async delete(id: string): Promise<{ message: string }> {
-        const deleted = await this.recipeModel.findByIdAndDelete(id).exec();
+        const deleted = await this.recipeModel.findByIdAndDelete(id);
         if (!deleted) throw new NotFoundException('Recipe not found');
         return { message: 'Recipe deleted successfully' };
     }
 
+    // ---------------------------------------------------
+    // 2. RECOMMANDATIONS LOCALES
+    // ---------------------------------------------------
+
     async recommendRecipes(userId: string): Promise<Recipe[]> {
-        // Récupérer les produits de l'utilisateur
-        const userProducts = await this.productModel.find({ user: userId }).exec();
+        const userProducts = await this.productModel.find({ user: userId });
         const productNames = userProducts.map(p => p.name.toLowerCase());
 
-        // Récupérer toutes les recettes existantes avec les ingrédients
-        const allRecipes = await this.recipeModel.find().populate('ingredients').exec();
+        const allRecipes = await this.recipeModel.find().populate('ingredients');
 
-        // Filtrer les recettes où tous les ingrédients sont disponibles dans le frigo
         const recommended = allRecipes.filter(recipe => {
-            const ingredientNames = (recipe.ingredients as Product[]).map(ing => ing.name.toLowerCase());
-            // Vérifie que chaque ingrédient de la recette est dans le frigo
+            const ingredientNames = (recipe.ingredients as Product[])
+                .map(ing => ing.name.toLowerCase());
+
             return ingredientNames.every(name => productNames.includes(name));
         });
 
         return recommended;
     }
 
-    // Recommandations à partir des produits du frigo via TheMealDB
+    // ---------------------------------------------------
+    // 3. RECOMMANDATIONS VIA API MEALDB
+    // ---------------------------------------------------
+
     async recommendRecipesMeal(userId: string): Promise<any[]> {
-        // 1️⃣ Récupérer les produits de l'utilisateur
-        const userProducts = await this.productModel.find({ user: userId }).exec();
+        const userProducts = await this.productModel.find({ user: userId });
         const productNames = userProducts.map(p => p.name.toLowerCase());
 
-        const recipeResults: any[] = [];
+        const results: any[] = [];
+        const uniqueIds = new Set<string>();
 
-        // 2️⃣ Pour chaque ingrédient, récupérer les plats correspondants
         for (const ingredient of productNames) {
-            const filterUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`;
             try {
-                const filterResponse = await axios.get(filterUrl);
-                const meals = filterResponse.data.meals || [];
+                const filterRes = await axios.get(
+                    `https://www.themealdb.com/api/json/v1/1/filter.php?i=${ingredient}`
+                );
+
+                const meals = filterRes.data.meals || [];
 
                 for (const meal of meals) {
-                    // 3️⃣ Pour chaque plat, récupérer les détails complets
-                    const lookupUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`;
-                    const lookupResponse = await axios.get(lookupUrl);
-                    const fullMeal = lookupResponse.data.meals?.[0];
+                    if (uniqueIds.has(meal.idMeal)) continue;
+
+                    const details = await axios.get(
+                        `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
+                    );
+
+                    const fullMeal = details.data.meals?.[0];
                     if (!fullMeal) continue;
 
-                    // 4️⃣ Vérifier si la recette contient au moins un produit du frigo
+                    // Vérifier si au moins 1 ingrédient correspond
                     const ingredients: string[] = [];
+
                     for (let i = 1; i <= 20; i++) {
                         const ing = fullMeal[`strIngredient${i}`];
                         if (ing) ingredients.push(ing.toLowerCase());
                     }
 
                     if (ingredients.some(ing => productNames.includes(ing))) {
-                        recipeResults.push(fullMeal);
+                        uniqueIds.add(meal.idMeal);
+                        results.push(fullMeal);
                     }
                 }
             } catch (err) {
-                console.error(`Erreur pour l'ingrédient ${ingredient}:`, err.message);
+                console.error("Erreur MealDB:", err.message);
             }
         }
 
-        // 5️⃣ Supprimer les doublons
-        const uniqueRecipes = Array.from(
-            new Map(recipeResults.map(item => [item.idMeal, item])).values()
+        return results;
+    }
+
+    // ---------------------------------------------------
+    // 4. IMPORT AUTOMATIQUE : 1 RECETTE PAR PRODUIT
+    // ---------------------------------------------------
+
+    async importOneRecipePerProduct(userId: string) {
+        const userProducts = await this.productModel.find({ user: userId });
+
+        if (userProducts.length === 0) {
+            return { message: "Aucun produit trouvé.", data: [] };
+        }
+
+        const importedRecipes: ImportedRecipeResult[] = [];
+
+        const uniqueNames = Array.from(
+            new Set(userProducts.map(p => p.name.toLowerCase().trim()))
         );
 
-        return uniqueRecipes;
+        for (const product of uniqueNames) {
+            try {
+                const filterRes = await axios.get(
+                    `https://www.themealdb.com/api/json/v1/1/filter.php?i=${product}`
+                );
+
+                const meals = filterRes.data.meals;
+
+                if (!meals?.length) {
+                    importedRecipes.push({
+                        product,
+                        recipe: null,
+                        message: "Aucune recette trouvée"
+                    });
+                    continue;
+                }
+
+                const randomMeal = meals[Math.floor(Math.random() * meals.length)];
+                const lookup = await axios.get(
+                    `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${randomMeal.idMeal}`
+                );
+
+                const full = lookup.data.meals[0];
+
+                // Extraire ingrédients
+                const ingredientList: string[] = [];
+                const measuresList: string[] = [];
+
+                for (let i = 1; i <= 20; i++) {
+                    const ing = full[`strIngredient${i}`];
+                    const measure = full[`strMeasure${i}`];
+                    if (ing && ing.trim() !== "") {
+                        ingredientList.push(ing);
+                        measuresList.push(measure);
+                    }
+                }
+
+                // Produits internes correspondants
+                const dbProducts = await this.productModel.find({
+                    name: { $in: ingredientList.map(i => i.toLowerCase()) }
+                });
+
+                const ingredientIds = dbProducts.map(p => p._id);
+
+                const exists = await this.recipeModel.findOne({
+                    title: full.strMeal
+                });
+
+                if (exists) {
+                    importedRecipes.push({
+                        product,
+                        recipe: exists,
+                        message: "Déjà existante"
+                    });
+                    continue;
+                }
+
+                const recipe = await this.recipeModel.create({
+                    title: full.strMeal,
+                    image: full.strMealThumb,
+                    instructions: full.strInstructions,
+                    ingredientList,
+                    measuresList,
+                    category: full.strCategory,
+                    area: full.strArea,
+                    tags: full.strTags ? full.strTags.split(",") : [],
+                    ingredients: ingredientIds,
+                    user: userId,
+                    sourceUrl: full.strSource,
+                    youtubeUrl: full.strYoutube
+                });
+
+                importedRecipes.push({
+                    product,
+                    recipe,
+                    message: "Importée"
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        return {
+            message: "Import terminé",
+            count: importedRecipes.length,
+            data: importedRecipes
+        };
     }
+
+    // ---------------------------------------------------
+    // 5. RECETTES EXACTES (100% faisables)
+    // ---------------------------------------------------
+
+    async recipesUsingExistingProducts(userId: string) {
+        const userProducts = await this.productModel.find({ user: userId });
+
+        if (!userProducts.length) {
+            return { message: "Aucun produit.", recipes: [] };
+        }
+
+        const productNames = userProducts.map(p => p.name.toLowerCase().trim());
+        const recipes = await this.recipeModel.find();
+
+        const result = recipes.filter(recipe => {
+            const ing: string[] = [];
+
+            for (let i = 1; i <= 20; i++) {
+                const v = recipe[`strIngredient${i}`];
+                if (v) ing.push(v.toLowerCase());
+            }
+
+            return ing.every(i => productNames.includes(i));
+        });
+
+        return {
+            message: "Recettes réalisables",
+            count: result.length,
+            recipes: result
+        };
+    }
+
+    // ---------------------------------------------------
+    // 6. RECETTES + INGRÉDIENTS MANQUANTS
+    // ---------------------------------------------------
+
+    async recipesUsingAllProductsPlusExtras(userId: string) {
+        const userProducts = await this.productModel.find({ user: userId });
+
+        if (!userProducts.length) {
+            return { message: "Aucun produit.", recipes: [] };
+        }
+
+        const productNames = userProducts.map(p => p.name.toLowerCase());
+        const allRecipes = await this.recipeModel.find().populate('ingredients');
+
+        const results: RecipeWithMissing[] = allRecipes.map(recipe => {
+            const ingredientNames = (recipe.ingredients ?? [])
+                .map((i: any) => i.name.toLowerCase())
+                .filter(Boolean);
+
+            const missing = ingredientNames.filter(i => !productNames.includes(i));
+
+            return {
+                id: String(recipe._id),
+                title: recipe.title,
+                image: recipe.image,
+                recipe,
+                ingredients: ingredientNames,
+                missingIngredients: missing,
+                fullyMatched: missing.length === 0
+            };
+        });
+
+        return {
+            message: "Recettes analysées",
+            total: results.length,
+            recipes: results
+        };
+    }
+
+    // ---------------------------------------------------
+    // 7. UNE RECETTE PAR PRODUIT
+    // ---------------------------------------------------
+
+    async recipePerProduct(userId: string) {
+        const userProducts = await this.productModel.find({ user: userId });
+
+        if (!userProducts.length) {
+            return { message: "Aucun produit.", count: 0, data: [] };
+        }
+
+        const allRecipes = await this.recipeModel.find().populate('ingredients');
+
+        const result: RecipePerProduct[] = userProducts.map(p => {
+            const name = p.name.toLowerCase();
+
+            const recipe = allRecipes.find(r =>
+                r.ingredients.some(i => i.name.toLowerCase() === name)
+            ) || null;
+
+            return {
+                product: p.name,
+                recipe,
+                message: recipe ? "Recette trouvée" : "Aucune recette"
+            };
+        });
+
+        return {
+            message: "Recette par produit",
+            count: result.length,
+            data: result
+        };
+    }
+
+    // ---------------------------------------------------
+    // 10. Marquer une recette comme cuisinée
+    // ---------------------------------------------------
+    async cookRecipe(userId: string, recipeId: string) {
+        // Trouver la recette
+        const recipe = await this.recipeModel.findById(recipeId).populate('ingredients');
+        if (!recipe) throw new NotFoundException('Recette non trouvée');
+
+        // Ingrédients de la recette
+        const recipeIngredients = recipe.ingredients.map((i: any) =>
+            i.name.toLowerCase()
+        );
+
+        // Produits du frigo utilisateur
+        const userProducts = await this.productModel.find({ user: userId });
+
+        const productsToRemove = userProducts.filter(p =>
+            recipeIngredients.includes(p.name.toLowerCase())
+        );
+
+        // Suppression des produits utilisés
+        const deleted = await this.productModel.deleteMany({
+            _id: { $in: productsToRemove.map(p => p._id) }
+        });
+
+        return {
+            message: "Recette cuisinée",
+            removedProducts: deleted.deletedCount,
+            recipe: recipe.title,
+        };
+    }
+    // recipes.service.ts (ajouter dans la classe RecipesService)
+    async getRecipesBySingleIngredient(userId: string, productName: string) {
+        const normalized = productName.toLowerCase().trim();
+
+        // 1) produits de l'utilisateur
+        const userProducts = await this.productModel.find({ user: userId });
+        const userNames = userProducts.map(p => p.name.toLowerCase().trim());
+
+        // 2) Recettes locales contenant l'ingrédient (par rapport à ingredientList OR ingredients populated)
+        const allRecipes = await this.recipeModel.find().populate('ingredients').exec();
+
+        const localMatches = allRecipes
+            .filter((recipe: any) => {
+                const fromList = (recipe.ingredientList ?? []).map((s: string) => s.toLowerCase().trim());
+                const fromProducts = (recipe.ingredients ?? []).map((p: any) => (p.name || '').toLowerCase().trim());
+                const combined = Array.from(new Set([...fromList, ...fromProducts]));
+                return combined.includes(normalized);
+            })
+            .map((recipe: any) => {
+                const ingredientNames = (recipe.ingredients ?? [])
+                    .map((i: any) => (i.name || '').toLowerCase().trim());
+
+                const listNames = (recipe.ingredientList ?? []).map((s: string) => s.toLowerCase().trim());
+
+                const allIngredientNames = Array.from(new Set([...ingredientNames, ...listNames]));
+
+                const missing = allIngredientNames.filter(i => !userNames.includes(i));
+
+                return {
+                    id: recipe._id.toString(),
+                    title: recipe.title,
+                    image: recipe.image,
+                    recipe,
+                    ingredients: allIngredientNames,
+                    missingIngredients: missing,
+                    fullyMatched: missing.length === 0
+                };
+            });
+
+
+        // 3) Recettes via TheMealDB (externes) — on récupère des plats contenant l'ingrédient
+        const externalResults: any[] = [];
+        try {
+            const filterRes = await axios.get(
+                `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(normalized)}`
+            );
+            const meals = filterRes.data.meals || [];
+            // obtenir détails pour chaque meal (limiter par ex. 10 pour performance)
+            for (const meal of meals.slice(0, 10)) {
+                try {
+                    const lookup = await axios.get(
+                        `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
+                    );
+                    const full = lookup.data.meals?.[0];
+                    if (!full) continue;
+                    // build simplified object
+                    const ingredientList: string[] = [];
+                    for (let i = 1; i <= 20; i++) {
+                        const ing = full[`strIngredient${i}`];
+                        if (ing && ing.trim() !== '') ingredientList.push(ing.toLowerCase().trim());
+                    }
+                    const missing = ingredientList.filter(i => !userNames.includes(i));
+                    externalResults.push({
+                        idMeal: full.idMeal,
+                        title: full.strMeal,
+                        image: full.strMealThumb,
+                        ingredientList,
+                        missingIngredients: missing,
+                        fullyMatched: missing.length === 0,
+                        source: 'mealdb',
+                        details: full
+                    });
+                } catch (e) { /* ignore single meal error */ }
+            }
+        } catch (e) {
+            // ignore external API error but log
+            console.error('MealDB error', e?.message ?? e);
+        }
+
+        return {
+            message: 'Recettes pour produit',
+            product: normalized,
+            localCount: localMatches.length,
+            externalCount: externalResults.length,
+            local: localMatches,
+            external: externalResults
+        };
+    }
+
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ProductsService } from '../../../../core/services/products.service';
 import { ComponentCardComponent } from '../../../../shared/components/common/component-card/component-card.component';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule,FormsModule, RouterModule, ComponentCardComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ComponentCardComponent],
   templateUrl: './products-list.component.html',
 })
 export class ProductsListComponent implements OnInit {
@@ -23,28 +23,29 @@ export class ProductsListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 3;
 
-  constructor(private productsService: ProductsService) { }
+  constructor(private productsService: ProductsService, private router: Router) { }
 
   ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  loadProducts() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userId = user._id;
-
     if (!userId) {
       this.errorMessage = 'Utilisateur non trouvé dans le localStorage.';
       this.loading = false;
       return;
     }
 
+    this.loading = true;
     this.productsService.getUserProducts(userId).subscribe({
       next: (res) => {
-        // Trier par date d'expiration (plus proche d'abord)
         this.products = res.sort((a: any, b: any) =>
           new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
         );
 
-        // Récupérer les catégories uniques
         this.categories = Array.from(new Set(this.products.map(p => p.category)));
-
         this.applyFilter();
         this.loading = false;
       },
@@ -58,14 +59,10 @@ export class ProductsListComponent implements OnInit {
 
   applyFilter() {
     if (this.selectedCategory) {
-      this.filteredProducts = this.products.filter(
-        p => p.category === this.selectedCategory
-      );
+      this.filteredProducts = this.products.filter(p => p.category === this.selectedCategory);
     } else {
       this.filteredProducts = [...this.products];
     }
-
-    // Reset pagination
     this.currentPage = 1;
   }
 
@@ -88,7 +85,25 @@ export class ProductsListComponent implements OnInit {
   }
 
   get totalPages(): number {
-  return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
-}
+    return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+  }
 
+  markAsUsed(productId: string) {
+    this.productsService.deleteProduct(productId).subscribe({
+      next: () => this.loadProducts(),
+      error: (err) => console.error(err)
+    });
+  }
+
+  deleteProduct(productId: string) {
+    this.productsService.deleteProduct(productId).subscribe({
+      next: () => this.loadProducts(),
+      error: (err) => console.error(err)
+    });
+  }
+
+  suggestForProduct(productName: string) {
+    // Redirige vers la page de suggestions de recettes pour ce produit
+    this.router.navigate(['/recipes/from-product', encodeURIComponent(productName)]);
+  }
 }

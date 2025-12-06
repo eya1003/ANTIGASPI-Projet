@@ -20,3 +20,13 @@ ng serve
 La première version du projet est fonctionnelle.
 L’architecture générale et les templates de base sont en place et seront améliorés progressivement.
 Les fonctionnalités Login et Signup ont été testées avec Postman, puis intégrées côté Angular avec la navigation et l’édition du profil (Edit Profile).
+
+la deuxième version du projet est fonctionnelle.
+
+* Gestion des produits dans le réfrigérateur : 
+
+Ajouter, modifier, supprimer des produits
+
+* Filtrer par catégorie
+
+* Pagination des produits

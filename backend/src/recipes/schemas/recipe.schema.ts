@@ -4,7 +4,6 @@ import { Product } from '../../products/schemas/product.schema';
 import { User } from '../../users/schemas/user.schema';
 
 export type RecipeDocument = Recipe & Document;
-
 @Schema()
 export class Recipe {
     @Prop({ required: true })
@@ -14,16 +13,33 @@ export class Recipe {
     ingredients: Product[];
 
     @Prop()
-    instructions?: string;
+    instructions?: string; // étapes de la recette
 
     @Prop()
     image?: string;
+
+    @Prop()
+    category?: string; // ex: Dessert
+
+    @Prop()
+    area?: string; // ex: Malaysian
+
+    @Prop([String])
+    tags?: string[];
+
+    @Prop([String])
+    ingredientList?: string[]; // strIngredientX
+
+    @Prop([String])
+    measuresList?: string[]; // strMeasureX
 
     @Prop({ type: Types.ObjectId, ref: 'User' })
     user?: User;
 
     @Prop()
-    sourceUrl?: string; // url OpenFoodFacts
-}
+    sourceUrl?: string;
 
+    @Prop()
+    youtubeUrl?: string;
+}
 export const RecipeSchema = SchemaFactory.createForClass(Recipe);

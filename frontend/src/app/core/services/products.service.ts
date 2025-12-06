@@ -11,7 +11,7 @@ export class ProductsService {
   addProductWithImage(formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/addProductWithImage`, formData);
   }
-
+  
   getAllProducts(): Observable<any> {
     return this.http.get(`${this.apiUrl}/getAll`);
   }
@@ -19,4 +19,8 @@ export class ProductsService {
   getUserProducts(userId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/user/${userId}`);
   }
+  deleteProduct(productId: string): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/deleteProduct/${productId}`);
+}
+
 }

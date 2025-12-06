@@ -21,6 +21,8 @@ import { ForgotPasswordFormComponent } from './shared/components/auth/forget-pas
 import { ResetPasswordFormComponent } from './shared/components/auth/reset-password-form/reset-password-form.component';
 import { SigninFormComponent } from './shared/components/auth/signin-form/signin-form.component';
 import { SignupFormComponent } from './shared/components/auth/signup-form/signup-form.component';
+import { RecipesListComponent } from './features/recipes/recipes-list.component';
+import { RecipesFromProductComponent } from './features/recipes/recipes-from-product.component';
 
 export const routes: Routes = [
   {
@@ -54,6 +56,17 @@ export const routes: Routes = [
         component: AddProductComponent,
         title: 'ANTIGASPI',
       },
+      {
+        path: 'recipes/from-product/:name',
+        component: RecipesFromProductComponent,
+        title: 'ANTIGASPI',
+      },
+      {
+        path: 'liste-recette',
+        component: RecipesListComponent,
+        title: 'ANTIGASPI',
+      },
+      
       {
         path: 'frigde',
         component: ProductsListComponent,

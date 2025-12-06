@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { LabelComponent } from '../../form/label/label.component';
-import { CheckboxComponent } from '../../form/input/checkbox.component';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { AuthService, User } from '../../../../core/services/auth.service';
 import { ButtonComponent } from '../../ui/button/button.component';
@@ -17,7 +16,6 @@ import { ButtonComponent } from '../../ui/button/button.component';
     RouterModule,
     LabelComponent,
     ButtonComponent,
-    CheckboxComponent,
     InputFieldComponent,
   ],
   templateUrl: './signup-form.component.html',
