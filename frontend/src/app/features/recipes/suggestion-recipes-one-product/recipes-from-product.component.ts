@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { RecipesService } from '../../core/services/recipes.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { RecipesService } from '../../../core/services/recipes.service';
 
 @Component({
     selector: 'app-recipes-from-product',
@@ -17,7 +17,7 @@ export class RecipesFromProductComponent implements OnInit {
     local: any[] = [];
     external: any[] = [];
 
-    constructor(private route: ActivatedRoute, private recipesService: RecipesService) { }
+    constructor(private route: ActivatedRoute, private recipesService: RecipesService, private router: Router) { }
 
     ngOnInit(): void {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -78,4 +78,36 @@ export class RecipesFromProductComponent implements OnInit {
             error: () => alert('Erreur serveur')
         });
     }
+    
+    
+    cookExternalRecipe(recipe: any) {
+        if (!recipe?.ingredientList?.length) return;
+
+        if (!confirm(`Confirmer que vous avez cuisiné ${recipe.title} ?`)) return;
+
+        const payload = {
+            ingredientList: recipe.ingredientList,
+            recipeData: {
+                title: recipe.title,
+                image: recipe.image,
+                instructions: recipe.details?.strInstructions,
+                category: recipe.details?.strCategory,
+                area: recipe.details?.strArea,
+                tags: recipe.details?.strTags
+                    ? recipe.details.strTags.split(',')
+                    : [],
+                source: recipe.details?.strSource,
+                youtubeUrl: recipe.details?.strYoutube,
+            }
+        };
+
+        this.recipesService.cookExternalRecipe(this.userId, payload).subscribe({
+            next: (res) => {
+                alert(`Recette enregistrée et produits supprimés`);
+                this.router.navigate(['/']);
+            },
+            error: () => alert('Erreur serveur')
+        });
+    }
+
 }

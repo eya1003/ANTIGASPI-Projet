@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ComponentCardComponent } from '../../../../shared/components/common/component-card/component-card.component';
 import { LabelComponent } from '../../../../shared/components/form/label/label.component';
 import { InputFieldComponent } from '../../../../shared/components/form/input/input-field.component';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SelectComponent } from '../../../../shared/components/form/select/select.component';
 import { DatePickerComponent } from '../../../../shared/components/form/date-picker/date-picker.component';
 import { ProductsService } from '../../../../core/services/products.service';
@@ -23,11 +23,13 @@ import { ProductsService } from '../../../../core/services/products.service';
     SelectComponent,
     DatePickerComponent
   ],
-  templateUrl: './add-product.component.html'
+  templateUrl: './add-product.component.html',
+  schemas: [NO_ERRORS_SCHEMA]
 })
 export class AddProductComponent {
   productForm: FormGroup;
   selectedFile: File | null = null;
+  today: Date = new Date();
   categories = [
     { label: 'Dairy', value: 'Dairy' },
     { label: 'Fruits', value: 'Fruits' },
@@ -36,7 +38,7 @@ export class AddProductComponent {
     { label: 'Other', value: 'Other' },
   ];
 
-  constructor(private fb: FormBuilder, private productsService: ProductsService) {
+  constructor(private fb: FormBuilder, private productsService: ProductsService, private router: Router) {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
@@ -46,28 +48,34 @@ export class AddProductComponent {
     });
   }
 
-  // gérer la sélection de catégorie
   handleSelectChange(value: string) {
     this.productForm.patchValue({ category: value });
   }
 
-  // gérer le date picker
   handleDateChange(event: any) {
     if (!event) return;
+
+    let selected: Date | null = null;
+
     if (event.selectedDates && event.selectedDates.length > 0) {
-      const date = event.selectedDates[0];
-      this.productForm.patchValue({ expiryDate: date.toISOString() });
-    } else {
-      console.warn('Date invalide reçue du date picker', event);
+      selected = event.selectedDates[0];
+    } else if (event instanceof Date) {
+      selected = event;
+    }
+
+    if (selected) {
+      if (selected < this.today) {
+        alert("La date d'expiration ne peut pas être passée !");
+        return;
+      }
+      this.productForm.patchValue({ expiryDate: selected.toISOString() });
     }
   }
 
-  // sélectionner le fichier image
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0] ?? null;
   }
 
-  // soumission du formulaire
   handleSubmit() {
     if (!this.productForm.valid) {
       console.log('❌ Formulaire invalide');
@@ -95,7 +103,11 @@ export class AddProductComponent {
     }
 
     this.productsService.addProductWithImage(formData).subscribe({
-      next: (res) => console.log('✅ Produit ajouté avec succès', res),
+      next: (res) => {
+        alert('✅ Produit ajouté avec succès');
+        console.log('✅ Produit ajouté avec succès', res);
+        this.router.navigate(['/']);
+      },
       error: (err) => console.error('❌ Erreur lors de l’ajout du produit', err)
     });
   }

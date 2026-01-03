@@ -34,7 +34,7 @@
           <h3 class="font-semibold text-lg text-gray-800">{{ product.name }}</h3>
           <p class="text-gray-600 text-sm">Quantité: {{ product.quantity }}</p>
           <p class="text-gray-600 text-sm">Catégorie: {{ product.category }}</p>
-          <p class="text-gray-500 text-xs mt-1">Date d’expiration: {{ product.expiryDate | date:'shortDate' }}</p>
+          <p class="text-gray-500 text-xs mt-1">Date d’expiration: {{ product.expiryDate | date:'dd-MM-yyyy' }}</p>
 
           <!-- Badge -->
           <p class="mt-2 font-bold" *ngIf="product.status === 'soon'" style="color: #d97706;">À consommer vite</p>

@@ -57,6 +57,18 @@ export class RecipesController {
         return this.recipesService.getRecipesBySingleIngredient(userId, productName);
     }
 
+    @Post('cook-external/:userId')
+    cookExternal(
+        @Param('userId') userId: string,
+        @Body() body: { ingredientList: string[]; recipeData: any }
+    ) {
+        return this.recipesService.cookExternalRecipe(
+            userId,
+            body.ingredientList,
+            body.recipeData
+        );
+    }
+
 
     // ---------------------------------------------------
     // 11. Marquer une recette comme cuisinée

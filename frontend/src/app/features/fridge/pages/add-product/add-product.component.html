@@ -1,43 +1,55 @@
 <app-component-card title="Ajouter un produit au frigo">
   <form [formGroup]="productForm" (ngSubmit)="handleSubmit()" class="space-y-6" enctype="multipart/form-data">
+
+    <!-- Nom du produit -->
     <div>
       <app-label for="name">Nom du produit</app-label>
       <app-input-field id="name" type="text" formControlName="name" placeholder="Ex : Lait" />
+      <div class="text-red-500 text-sm mt-1" *ngIf="productForm.get('name')?.invalid">
+        <span *ngIf="productForm.get('name')?.errors?.['required']">Le nom du produit est requis.</span>
+        <span *ngIf="productForm.get('name')?.errors?.['pattern']">Le nom contient des caractères invalides.</span>
+      </div>
     </div>
 
+    <!-- Quantité -->
     <div>
       <app-label for="quantity">Quantité</app-label>
       <app-input-field id="quantity" type="number" formControlName="quantity" placeholder="2" />
+      <div class="text-red-500 text-sm mt-1" *ngIf="productForm.get('quantity')?.invalid">
+        <span *ngIf="productForm.get('quantity')?.errors?.['required']">La quantité est requise.</span>
+        <span *ngIf="productForm.get('quantity')?.errors?.['min']">La quantité doit être au moins 1.</span>
+      </div>
     </div>
 
+    <!-- Catégorie -->
     <div>
       <app-label>Catégorie</app-label>
-      <app-select
-        [options]="categories"
-        placeholder="Choisir une catégorie"
-        [value]="productForm.get('category')?.value"
-        (valueChange)="handleSelectChange($event)"
-      ></app-select>
+      <app-select [options]="categories" placeholder="Choisir une catégorie"
+        [value]="productForm.get('category')?.value" (valueChange)="handleSelectChange($event)"></app-select>
+      <div class="text-red-500 text-sm mt-1" *ngIf="productForm.get('category')?.invalid">
+        La catégorie est requise.
+      </div>
     </div>
 
+    <!-- Date d'expiration -->
     <div>
-      <app-date-picker
-        id="expiryDate"
-        label="Date d’expiration"
-        placeholder="Sélectionner une date"
-        (dateChange)="handleDateChange($event)"
-      ></app-date-picker>
+      <app-date-picker id="expiryDate" label="Date d’expiration" placeholder="Sélectionner une date" [minDate]="today"
+        [selectedDate]="productForm.get('expiryDate')?.value | date:'yyyy-MM-dd'"
+        (dateChange)="handleDateChange($event)"></app-date-picker>
+      <div class="text-red-500 text-sm mt-1" *ngIf="productForm.get('expiryDate')?.invalid">
+        La date d'expiration est requise.
+      </div>
     </div>
 
+
+    <!-- Image -->
     <div>
       <app-label for="image">Image du produit</app-label>
       <input type="file" id="image" (change)="onFileSelected($event)" />
     </div>
 
-    <button
-      type="submit"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg shadow"
-    >
+    <!-- Bouton submit -->
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg shadow">
       Ajouter le produit
     </button>
   </form>

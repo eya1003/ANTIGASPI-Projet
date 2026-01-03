@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Recipe, RecipeDocument } from './schemas/recipe.schema';
 import { Product, ProductDocument } from '../products/schemas/product.schema';
+import { Types } from 'mongoose';
+
 import axios from 'axios';
 
 import {
@@ -329,34 +331,56 @@ export class RecipesService {
     // 10. Marquer une recette comme cuisinée
     // ---------------------------------------------------
     async cookRecipe(userId: string, recipeId: string) {
-        // Trouver la recette
         const recipe = await this.recipeModel.findById(recipeId).populate('ingredients');
+
         if (!recipe) throw new NotFoundException('Recette non trouvée');
 
-        // Ingrédients de la recette
-        const recipeIngredients = recipe.ingredients.map((i: any) =>
-            i.name.toLowerCase()
-        );
+        // combiner ingredients référencés et ingredientList
+        const recipeIngredients: string[] = [];
 
-        // Produits du frigo utilisateur
+        // ingrédients liés en base
+        if (recipe.ingredients?.length) {
+            recipe.ingredients.forEach((i: any) => {
+                if (i.name) recipeIngredients.push(i.name.toLowerCase().trim());
+            });
+        }
+
+        // ingrédients venant de MealDB
+        if (recipe.ingredientList?.length) {
+            recipe.ingredientList.forEach((name: string) => {
+                if (name) recipeIngredients.push(name.toLowerCase().trim());
+            });
+        }
+
+        // enlever doublons
+        const uniqueIngredients = Array.from(new Set(recipeIngredients));
+
+        // produits du frigo
         const userProducts = await this.productModel.find({ user: userId });
 
-        const productsToRemove = userProducts.filter(p =>
-            recipeIngredients.includes(p.name.toLowerCase())
-        );
+        const productsToRemove = userProducts.filter(p => {
+            const productName = p.name.toLowerCase().trim();
+            return uniqueIngredients.includes(productName);
+        });
 
-        // Suppression des produits utilisés
+        if (productsToRemove.length === 0) {
+            return { message: 'Aucun produit du frigo ne correspond à cette recette', removedProducts: 0 };
+        }
+
         const deleted = await this.productModel.deleteMany({
             _id: { $in: productsToRemove.map(p => p._id) }
         });
 
         return {
-            message: "Recette cuisinée",
+            message: 'Recette cuisinée',
             removedProducts: deleted.deletedCount,
+            removed: productsToRemove.map(p => p.name),
             recipe: recipe.title,
         };
     }
-    // recipes.service.ts (ajouter dans la classe RecipesService)
+
+
+
     async getRecipesBySingleIngredient(userId: string, productName: string) {
         const normalized = productName.toLowerCase().trim();
 
@@ -450,6 +474,63 @@ export class RecipesService {
             external: externalResults
         };
     }
+    // ---------------------------------------------------
+    // Marquer une recette externe comme cuisinée
+    // ---------------------------------------------------
+    async cookExternalRecipe(
+        userId: string,
+        ingredientList: string[],
+        recipeData?: any
+    ) {
+        // 1️⃣ supprimer produits
+        const userProducts = await this.productModel.find({ user: userId });
+
+        const productsToRemove = userProducts.filter(p =>
+            ingredientList.some(i =>
+                i.toLowerCase().trim() === p.name.toLowerCase().trim()
+            )
+        );
+
+        await this.productModel.deleteMany({
+            _id: { $in: productsToRemove.map(p => p._id) }
+        });
+
+        // 2️⃣ enregistrer recette externe
+        let savedRecipe: RecipeDocument | null = null;
+
+        if (recipeData?.title) {
+            savedRecipe = await this.recipeModel.findOneAndUpdate(
+                {
+                    title: recipeData.title,
+                    user: new Types.ObjectId(userId)
+                },
+                {
+                    $setOnInsert: {
+                        title: recipeData.title,
+                        image: recipeData.image || '',
+                        instructions: recipeData.instructions || '',
+                        ingredientList,
+                        category: recipeData.category,
+                        area: recipeData.area,
+                        tags: recipeData.tags || [],
+                        user: new Types.ObjectId(userId),
+                        sourceUrl: recipeData.source,
+                        youtubeUrl: recipeData.youtubeUrl
+                    }
+                },
+                { new: true, upsert: true }
+            );
+        }
+
+        return {
+            message: 'Recette cuisinée',
+            removed: productsToRemove.map(p => p.name),
+            recipeSaved: savedRecipe?.title ?? null
+        };
+
+    }
+
+
 
 
 }

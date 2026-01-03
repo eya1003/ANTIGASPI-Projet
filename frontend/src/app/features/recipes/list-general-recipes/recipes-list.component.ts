@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RecipesService, Recipe } from '../../core/services/recipes.service';
+import { RecipesService, Recipe } from '../../../core/services/recipes.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -54,9 +54,11 @@ export class RecipesListComponent implements OnInit {
     next: () => {
       this.recipes = this.recipes.filter(r => r._id !== recipe._id);
       alert('Préparation validée ! Les ingrédients ont été retirés du frigo.');
+      this.router.navigate(['/']);
     },
     error: () => alert('Erreur serveur.')
   });
 }
+
 
 }

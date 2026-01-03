@@ -25,12 +25,11 @@
     <p class="whitespace-pre-line">{{ recipe.instructions || 'Instructions non disponibles' }}</p>
 
     <div class="mt-4 flex gap-2">
-        <button *ngIf="!isExternal" (click)="cookRecipe()" class="px-3 py-1 bg-green-600 text-white rounded">
-            Marquer cuisinée
-        </button>
+        
+
         <button (click)="openExternal()" class="px-3 py-1 bg-blue-500 text-white rounded">
             Voir la source
         </button>
-       
+
     </div>
 </div>

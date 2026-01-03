@@ -1,9 +1,7 @@
-<div *ngIf="loading" class="p-6">Chargement...</div>
-<div *ngIf="error" class="p-6 text-red-600">{{ error }}</div>
-
 <div *ngIf="!loading && !error" class="max-w-5xl mx-auto p-6 space-y-6">
     <h1 class="text-2xl font-bold">Recettes contenant "{{ productName }}"</h1>
 
+    <!-- Recettes locales -->
     <section>
         <h2 class="text-xl font-semibold mt-4">Recettes locales</h2>
         <div *ngIf="local.length === 0" class="text-gray-500 mt-2">Aucune recette locale trouvée.</div>
@@ -15,17 +13,13 @@
                     <div class="flex-1">
                         <h3 class="font-bold">{{ r.title }}</h3>
                         <p class="text-sm text-gray-600">Ingrédients: {{ r.ingredients.join(', ') }}</p>
-                        <p class="text-sm mt-1" *ngIf="r.fullyMatched" style="color:green">Tous les ingrédients
-                            disponibles</p>
+                        <p class="text-sm mt-1" *ngIf="r.fullyMatched" style="color:green">Tous les ingrédients disponibles</p>
                         <p class="text-sm mt-1" *ngIf="r.missingIngredients?.length" style="color:orange">
                             Manquants: {{ r.missingIngredients.join(', ') }}
                         </p>
                         <div class="mt-2 flex gap-2">
-                            <!-- routerLink vers la page détail -->
-                            <a [routerLink]="['/recipes', r.id]" class="px-2 py-1 bg-blue-500 text-white rounded">Voir
-                                détails</a>
-                            <button (click)="cookRecipeLocal(r)"
-                                class="px-2 py-1 bg-green-600 text-white rounded">Marquer cuisinée</button>
+                            <a [routerLink]="['/recipes', r.id]" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Voir détails</a>
+                            <button (click)="cookRecipeLocal(r)" class="px-2 py-1 bg-green-600 text-white rounded">Marquer cuisinée</button>
                         </div>
                     </div>
                 </div>
@@ -33,6 +27,7 @@
         </div>
     </section>
 
+    <!-- Recettes externes -->
     <section>
         <h2 class="text-xl font-semibold mt-6">Recettes externes (TheMealDB)</h2>
         <div *ngIf="external.length === 0" class="text-gray-500 mt-2">Aucune recette externe trouvée.</div>
@@ -41,20 +36,25 @@
             <div *ngFor="let e of external" class="p-4 bg-white rounded shadow">
                 <div class="flex items-start gap-4">
                     <img *ngIf="e.image" [src]="e.image" class="w-24 h-24 object-cover rounded" />
-                    <div>
+                    <div class="flex-1">
                         <h3 class="font-bold">{{ e.title }}</h3>
-                        <p class="text-sm mt-1" *ngIf="e.fullyMatched" style="color:green">Tous les ingrédients
-                            disponibles</p>
+                        <p class="text-sm mt-1" *ngIf="e.fullyMatched" style="color:green">Tous les ingrédients disponibles</p>
                         <p class="text-sm mt-1" *ngIf="e.missingIngredients?.length" style="color:orange">
                             Manquants: {{ e.missingIngredients.join(', ') }}
                         </p>
+
                         <div class="mt-2 flex gap-2">
-                            <!-- routerLink vers la page détail si on veut afficher les détails internes -->
-                            <a [routerLink]="['/recipes', e.idMeal]"
-                                class="px-2 py-1 bg-blue-500 text-white rounded">Voir détails</a>
-                            <!-- bouton pour ouvrir le lien externe comme avant -->
+                            <!-- Bouton voir la source -->
                             <button (click)="viewRecipeExternal(e)"
-                                class="px-2 py-1 bg-gray-500 text-white rounded">Ouvrir source</button>
+                                    class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                Voir la source
+                            </button>
+
+                            <!-- Bouton marquer cuisinée -->
+                            <button (click)="cookExternalRecipe(e)" 
+                                    class="px-2 py-1 bg-green-600 text-white rounded">
+                                Marquer cuisinée
+                            </button>
                         </div>
                     </div>
                 </div>

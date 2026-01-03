@@ -21,9 +21,9 @@ import { ForgotPasswordFormComponent } from './shared/components/auth/forget-pas
 import { ResetPasswordFormComponent } from './shared/components/auth/reset-password-form/reset-password-form.component';
 import { SigninFormComponent } from './shared/components/auth/signin-form/signin-form.component';
 import { SignupFormComponent } from './shared/components/auth/signup-form/signup-form.component';
-import { RecipesListComponent } from './features/recipes/recipes-list.component';
-import { RecipesFromProductComponent } from './features/recipes/recipes-from-product.component';
-import { RecipeDetailComponent } from './features/recipes/recipe-detail.component';
+import { RecipeDetailComponent } from './features/recipes/one-recipe-details/recipe-detail.component';
+import { RecipesListComponent } from './features/recipes/list-general-recipes/recipes-list.component';
+import { RecipesFromProductComponent } from './features/recipes/suggestion-recipes-one-product/recipes-from-product.component';
 
 export const routes: Routes = [
   {

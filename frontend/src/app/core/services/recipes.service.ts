@@ -45,6 +45,13 @@ export class RecipesService {
     getRecipesBySingleProduct(userId: string, productName: string) {
         return this.http.get(`${this.apiUrl}/bySingleProduct/${userId}/${encodeURIComponent(productName)}`);
     }
+    cookExternalRecipe(userId: string, body: any) {
+        return this.http.post(
+            `http://localhost:3000/recipes/cook-external/${userId}`,
+            body
+        );
+    }
+
 
     getRecipeById(id: string) {
         return this.http.get(`${this.apiUrl}/${id}`);

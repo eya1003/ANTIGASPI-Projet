@@ -89,18 +89,35 @@ export class ProductsListComponent implements OnInit {
   }
 
   markAsUsed(productId: string) {
+    if (!confirm('Êtes-vous sûr de vouloir marquer ce produit comme utilisé ?')) return;
+
     this.productsService.deleteProduct(productId).subscribe({
-      next: () => this.loadProducts(),
-      error: (err) => console.error(err)
+      next: () => {
+        alert('Produit marqué comme utilisé et supprimé.');
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Erreur lors de la suppression du produit.');
+      }
     });
   }
 
   deleteProduct(productId: string) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return;
+
     this.productsService.deleteProduct(productId).subscribe({
-      next: () => this.loadProducts(),
-      error: (err) => console.error(err)
+      next: () => {
+        alert('Produit supprimé avec succès.');
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Erreur lors de la suppression du produit.');
+      }
     });
   }
+
 
   suggestForProduct(productName: string) {
     // Redirige vers la page de suggestions de recettes pour ce produit
