@@ -367,16 +367,18 @@ export class RecipesService {
             return { message: 'Aucun produit du frigo ne correspond à cette recette', removedProducts: 0 };
         }
 
-        const deleted = await this.productModel.deleteMany({
-            _id: { $in: productsToRemove.map(p => p._id) }
-        });
+        await Promise.all(productsToRemove.map(async (p) => {
+            p.consumedAt = new Date();
+            p.status = 'ok';
+            await p.save();
+        }));
 
         return {
             message: 'Recette cuisinée',
-            removedProducts: deleted.deletedCount,
-            removed: productsToRemove.map(p => p.name),
+            consumedProducts: productsToRemove.map(p => p.name),
             recipe: recipe.title,
         };
+
     }
 
 
@@ -491,9 +493,12 @@ export class RecipesService {
             )
         );
 
-        await this.productModel.deleteMany({
-            _id: { $in: productsToRemove.map(p => p._id) }
-        });
+        await Promise.all(productsToRemove.map(async (p) => {
+            p.consumedAt = new Date();
+            p.status = 'ok';
+            await p.save();
+        }));
+
 
         // 2️⃣ enregistrer recette externe
         let savedRecipe: RecipeDocument | null = null;
@@ -523,14 +528,12 @@ export class RecipesService {
         }
 
         return {
-            message: 'Recette cuisinée',
-            removed: productsToRemove.map(p => p.name),
+            message: 'Recette externe cuisinée',
+            consumedProducts: productsToRemove.map(p => p.name),
             recipeSaved: savedRecipe?.title ?? null
         };
 
     }
-
-
 
 
 }

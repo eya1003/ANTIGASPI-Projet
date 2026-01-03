@@ -1,0 +1,32 @@
+<h2>Statistics</h2>
+
+<div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+
+  <!-- PIE CHART -->
+  <div style="width: 300px; height: 300px;">
+    <canvas baseChart
+            [data]="pieChartData"
+            [type]="'pie'"
+            [options]="chartOptions">
+    </canvas>
+  </div>
+
+  <!-- BAR CHART -->
+  <div style="width: 400px; height: 300px;">
+    <canvas baseChart
+            [data]="barChartData"
+            [type]="'bar'"
+            [options]="chartOptions">
+    </canvas>
+  </div>
+
+  <!-- LINE CHART -->
+  <div style="width: 400px; height: 300px;">
+    <canvas baseChart
+            [data]="lineChartData"
+            [type]="'line'"
+            [options]="chartOptions">
+    </canvas>
+  </div>
+
+</div>

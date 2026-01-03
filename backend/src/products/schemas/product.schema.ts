@@ -29,6 +29,12 @@ export class Product {
 
     @Prop({ default: false })
     savedFromWaste?: boolean; // pour calculer l’impact positif
+
+    @Prop({ default: null })
+    consumedAt?: Date; // date à laquelle le produit a été utilisé dans une recette
+
+    @Prop({ default: 'ok' })
+    status?: 'ok' | 'soon' | 'expired'; // pour l’affichage et le suivi
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

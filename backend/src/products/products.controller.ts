@@ -35,7 +35,24 @@ export class ProductsController {
         return this.productsService.addProduct(productData);
     }
 
-    
+    // 🔹 Produits actifs (non consommés)
+    @Get('active/:userId')
+    async getActiveProducts(@Param('userId') userId: string) {
+        return this.productsService.getUserActiveProducts(userId);
+    }
+
+    // 🔹 Produits consommés
+    @Get('consumed/:userId')
+    async getConsumedProducts(@Param('userId') userId: string) {
+        return this.productsService.getConsumedProducts(userId);
+    }
+
+    // 🔹 Produits expirés (gaspillés)
+    @Get('expired/:userId')
+    async getExpiredProducts(@Param('userId') userId: string) {
+        return this.productsService.getExpiredProducts(userId);
+    }
+
     @Get('alerts/:userId')
     async getExpiringAlerts(@Param('userId') userId: string) {
         return this.productsService.getUserExpiringAlerts(userId);

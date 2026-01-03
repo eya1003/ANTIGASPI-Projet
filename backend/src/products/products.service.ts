@@ -26,6 +26,18 @@ export class ProductsService {
         return product;
     }
 
+    async markAsConsumed(productId: string): Promise<Product> {
+        const product = await this.productModel.findById(productId);
+        if (!product) throw new NotFoundException('Product not found');
+
+        product.consumedAt = new Date(); // date de consommation
+        product.status = 'ok';           // même si "soon" avant
+        await product.save();
+
+        return product;
+    }
+
+
     /**
   * 🔔 Tous les jours à 00:00
   */
@@ -141,6 +153,41 @@ export class ProductsService {
             return { ...p.toObject(), status };
         });
     }
+
+    async getUserActiveProducts(userId: string): Promise<any[]> {
+        const today = new Date();
+
+        const products = await this.productModel.find({
+            user: userId,
+            consumedAt: null, // uniquement les produits non consommés
+        }).exec();
+
+        return products.map(p => {
+            const diffDays = Math.ceil((new Date(p.expiryDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            let status: 'soon' | 'expired' | 'ok' = 'ok';
+            if (diffDays < 0) status = 'expired';
+            else if (diffDays <= 2) status = 'soon';
+
+            return { ...p.toObject(), status };
+        });
+    }
+
+    async getConsumedProducts(userId: string): Promise<Product[]> {
+        return this.productModel.find({
+            user: userId,
+            consumedAt: { $ne: null } // tous les produits consommés
+        }).exec();
+    }
+
+    async getExpiredProducts(userId: string): Promise<Product[]> {
+        const today = new Date();
+        return this.productModel.find({
+            user: userId,
+            expiryDate: { $lt: today }
+        }).exec();
+    }
+
+
 
 
     async getExpiringProducts(userId: string, daysAhead: number = 3): Promise<Product[]> {

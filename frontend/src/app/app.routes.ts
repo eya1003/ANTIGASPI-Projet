@@ -24,6 +24,7 @@ import { SignupFormComponent } from './shared/components/auth/signup-form/signup
 import { RecipeDetailComponent } from './features/recipes/one-recipe-details/recipe-detail.component';
 import { RecipesListComponent } from './features/recipes/list-general-recipes/recipes-list.component';
 import { RecipesFromProductComponent } from './features/recipes/suggestion-recipes-one-product/recipes-from-product.component';
+import { StatisticsComponent } from './features/stats/statistics.component';
 
 export const routes: Routes = [
   {
@@ -75,6 +76,11 @@ export const routes: Routes = [
       {
         path: 'liste-recette',
         component: RecipesListComponent,
+        title: 'ANTIGASPI',
+      },
+      {
+        path: 'stats',
+        component: StatisticsComponent,
         title: 'ANTIGASPI',
       },
       
