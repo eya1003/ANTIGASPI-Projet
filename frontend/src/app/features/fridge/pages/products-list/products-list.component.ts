@@ -39,7 +39,7 @@ export class ProductsListComponent implements OnInit {
     }
 
     this.loading = true;
-    this.productsService.getUserProducts(userId).subscribe({
+    this.productsService.getActiveProducts(userId).subscribe({
       next: (res) => {
         this.products = res.sort((a: any, b: any) =>
           new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
@@ -91,17 +91,18 @@ export class ProductsListComponent implements OnInit {
   markAsUsed(productId: string) {
     if (!confirm('Êtes-vous sûr de vouloir marquer ce produit comme utilisé ?')) return;
 
-    this.productsService.deleteProduct(productId).subscribe({
-      next: () => {
-        alert('Produit marqué comme utilisé et supprimé.');
-        this.loadProducts();
+    this.productsService.markProductAsConsumed(productId).subscribe({
+      next: (updatedProduct) => {
+        alert('Produit marqué comme consommé.');
+        this.loadProducts(); // recharge la liste
       },
       error: (err) => {
         console.error(err);
-        alert('Erreur lors de la suppression du produit.');
+        alert('Erreur lors de la mise à jour du produit.');
       }
     });
   }
+
 
   deleteProduct(productId: string) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return;

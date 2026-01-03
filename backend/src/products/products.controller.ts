@@ -34,6 +34,10 @@ export class ProductsController {
 
         return this.productsService.addProduct(productData);
     }
+    @Put('consume/:productId')
+    async markAsConsumed(@Param('productId') productId: string) {
+        return this.productsService.markAsConsumed(productId);
+    }
 
     // 🔹 Produits actifs (non consommés)
     @Get('active/:userId')

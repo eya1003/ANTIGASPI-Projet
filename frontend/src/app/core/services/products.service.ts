@@ -29,6 +29,10 @@ export class ProductsService {
   getConsumedProducts(userId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/consumed/${userId}`);
   }
+  markProductAsConsumed(productId: string) {
+    return this.http.put(`http://localhost:3000/products/consume/${productId}`, {});
+  }
+
 
   getExpiredProducts(userId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/expired/${userId}`);

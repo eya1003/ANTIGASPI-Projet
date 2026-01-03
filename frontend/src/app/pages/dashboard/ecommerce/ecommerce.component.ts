@@ -3,61 +3,67 @@ import { ChartData, ChartOptions } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { ProductsService } from '../../../core/services/products.service';
 import { ComponentCardComponent } from '../../../shared/components/common/component-card/component-card.component';
+import { DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-ecommerce',
   standalone: true,
-  imports: [NgChartsModule, ComponentCardComponent],
+  imports: [NgChartsModule, ComponentCardComponent, DecimalPipe ],
   templateUrl: './ecommerce.component.html',
 })
 export class EcommerceComponent implements OnInit {
 
   userId!: string;
+
   consumedProducts: any[] = [];
   expiredProducts: any[] = [];
   activeProducts: any[] = [];
+  soonProducts: any[] = []; // produits qui vont expirer bientôt
 
   totalProducts = 0;
+  wasteRate = 0; // % gaspillage
 
+  // Charts
   pieChartData!: ChartData<'doughnut'>;
   barChartData!: ChartData<'bar'>;
-  areaChartData!: ChartData<'line'>;
+  miniLineChartData!: ChartData<'line'>;
 
+  // Chart options
   pieChartOptions: ChartOptions<'doughnut'> = {
     responsive: true,
     plugins: {
       legend: { position: 'bottom', labels: { font: { size: 14 } } },
-      tooltip: { enabled: true }
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: (tooltipItem: any) => {
+            const value = tooltipItem.raw;
+            const percent = ((value / this.totalProducts) * 100).toFixed(0);
+            return `${tooltipItem.label}: ${value} (${percent}%)`;
+          }
+        }
+      }
     },
-    animation: {
-      duration: 800,           // durée animation en ms
-      easing: 'easeOutBounce'  // effet d'animation
-    }
+    animation: { duration: 800, easing: 'easeOutBounce' }
   };
 
   barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
     indexAxis: 'y',
-    plugins: {
-      legend: { display: true, position: 'top' },
-      tooltip: { enabled: true }
-    },
-    scales: {
-      x: { stacked: true, beginAtZero: true },
-      y: { stacked: true }
-    },
-    elements: { bar: { borderRadius: 8 } }
+    plugins: { legend: { display: false }, tooltip: { enabled: true } },
+    scales: { x: { beginAtZero: true }, y: { grid: { display: false } } },
+    elements: { bar: { borderRadius: 6 } }
   };
 
-  areaChartOptions: ChartOptions<'line'> = {
+  miniLineChartOptions: ChartOptions<'line'> = {
     responsive: true,
-    plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
-    elements: { line: { tension: 0.4, borderWidth: 3 }, point: { radius: 5 } },
-    scales: { x: { display: true }, y: { beginAtZero: true } },
-    animation: {
-      duration: 800,
-      easing: 'easeOutQuart'
-    }
+    plugins: { legend: { display: false }, tooltip: { enabled: true } },
+    scales: { x: { display: false }, y: { display: false } },
+    elements: { 
+      line: { tension: 0.4, borderWidth: 2, borderColor: '#ff9800' }, 
+      point: { radius: 3, backgroundColor: '#ff9800' } 
+    },
+    animation: { duration: 600, easing: 'easeOutQuart' }
   };
 
   constructor(private productsService: ProductsService) {}
@@ -72,53 +78,61 @@ export class EcommerceComponent implements OnInit {
   }
 
   loadStatistics() {
-    this.productsService.getConsumedProducts(this.userId).subscribe(c => { this.consumedProducts = c; this.updateCharts(); });
-    this.productsService.getExpiredProducts(this.userId).subscribe(e => { this.expiredProducts = e; this.updateCharts(); });
-    this.productsService.getActiveProducts(this.userId).subscribe(a => { this.activeProducts = a; this.updateCharts(); });
+    // Consommés
+    this.productsService.getConsumedProducts(this.userId).subscribe(c => {
+      this.consumedProducts = c;
+      this.updateCharts();
+    });
+
+    // Expirés
+    this.productsService.getExpiredProducts(this.userId).subscribe(e => {
+      this.expiredProducts = e;
+      this.updateCharts();
+    });
+
+    // Actifs
+    this.productsService.getActiveProducts(this.userId).subscribe(a => {
+      this.activeProducts = a;
+
+      // Produits à consommer vite (3 jours avant expiration)
+      this.soonProducts = a.filter(p => {
+        const diffDays = Math.ceil((new Date(p.expiryDate).getTime() - new Date().getTime()) / (1000*60*60*24));
+        return diffDays > 0 && diffDays <= 3;
+      });
+
+      this.updateCharts();
+    });
   }
 
   updateCharts() {
     this.totalProducts = this.consumedProducts.length + this.expiredProducts.length + this.activeProducts.length;
+    this.wasteRate = this.totalProducts ? (this.expiredProducts.length / this.totalProducts) * 100 : 0;
 
-    // Doughnut chart
+    // Doughnut / Pie chart
     this.pieChartData = {
-      labels: ['Consumed', 'Expired'],
+      labels: ['Consommés', 'Expirés', 'Actifs', 'À consommer vite'],
       datasets: [{
-        data: [this.consumedProducts.length, this.expiredProducts.length],
-        backgroundColor: ['#4caf50', '#f44336'],
-        hoverOffset: 12
+        data: [
+          this.consumedProducts.length,
+          this.expiredProducts.length,
+          this.activeProducts.length,
+          this.soonProducts.length
+        ],
+        backgroundColor: ['#4caf50', '#f44336', '#2196f3', '#ff9800'],
+        hoverOffset: 10
       }]
     };
 
-    // Stacked Bar chart
+    // Horizontal Bar chart
     this.barChartData = {
       labels: ['Produits'],
       datasets: [
-        { label: 'Consumed', data: [this.consumedProducts.length], backgroundColor: '#4caf50' },
-        { label: 'Expired', data: [this.expiredProducts.length], backgroundColor: '#f44336' },
-        { label: 'Active', data: [this.activeProducts.length], backgroundColor: '#2196f3' }
+        { label: 'Consommés', data: [this.consumedProducts.length], backgroundColor: '#4caf50' },
+        { label: 'Expirés', data: [this.expiredProducts.length], backgroundColor: '#f44336' },
+        { label: 'Actifs', data: [this.activeProducts.length], backgroundColor: '#2196f3' },
+        { label: 'À consommer vite', data: [this.soonProducts.length], backgroundColor: '#ff9800' }
       ]
     };
 
-    // Area chart (expired products over time)
-    const grouped: { [key: string]: number } = {};
-    this.expiredProducts.forEach(p => {
-      const d = new Date(p.expiryDate);
-      const key = `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}`;
-      grouped[key] = (grouped[key] || 0) + 1;
-    });
-    const labels = Object.keys(grouped).sort();
-    const values = labels.map(l => grouped[l]);
-
-    this.areaChartData = {
-      labels,
-      datasets: [{
-        label: 'Expired products',
-        data: values,
-        borderColor: '#f44336',
-        backgroundColor: 'rgba(244,67,54,0.2)',
-        fill: true
-      }]
-    };
   }
 }

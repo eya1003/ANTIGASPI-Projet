@@ -1,54 +1,41 @@
+<div class="space-y-6">
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-
-  <!-- KPI Cards avec hover -->
-  <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
-    <h4 class="text-sm font-semibold text-gray-500">Total produits</h4>
-    <span class="text-3xl font-bold text-gray-800 mt-2">{{ totalProducts }}</span>
-  </div>
-  <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
-    <h4 class="text-sm font-semibold text-gray-500">Produits consommés</h4>
-    <span class="text-3xl font-bold text-green-600 mt-2">{{ consumedProducts.length }}</span>
-  </div>
-  <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
-    <h4 class="text-sm font-semibold text-gray-500">Produits expirés</h4>
-    <span class="text-3xl font-bold text-red-500 mt-2">{{ expiredProducts.length }}</span>
-  </div>
-
-  <!-- Doughnut Chart -->
-  <div class="sm:col-span-1 lg:col-span-1 bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
-    <h3 class="text-md font-semibold mb-2 text-gray-700">Consommés vs Expirés</h3>
-    <div class="w-48 h-48 relative">
-      <canvas baseChart
-              [data]="pieChartData"
-              chartType="doughnut"
-              [options]="pieChartOptions"></canvas>
-      <div class="absolute inset-0 flex items-center justify-center text-xl font-bold text-gray-700">
-        {{ totalProducts }}
-      </div>
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
+      <h4 class="text-sm font-semibold text-gray-500">Total produits</h4>
+      <span class="text-3xl font-bold text-gray-800 mt-2">{{ totalProducts }}</span>
+    </div>
+    <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
+      <h4 class="text-sm font-semibold text-gray-500">Consommés</h4>
+      <span class="text-3xl font-bold text-green-600 mt-2">{{ consumedProducts.length }}</span>
+    </div>
+    <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
+      <h4 class="text-sm font-semibold text-gray-500">Expirés</h4>
+      <span class="text-3xl font-bold text-red-500 mt-2">{{ expiredProducts.length }}</span>
+    </div>
+    <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
+      <h4 class="text-sm font-semibold text-gray-500">À consommer vite</h4>
+      <span class="text-3xl font-bold text-orange-500 mt-2">{{ soonProducts.length }}</span>
+    </div>
+    <div class="bg-white shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col items-center transition">
+      <h4 class="text-sm font-semibold text-gray-500">Taux de gaspillage</h4>
+      <span class="text-3xl font-bold text-red-500 mt-2">{{ wasteRate | number:'1.0-0' }}%</span>
     </div>
   </div>
 
-  <!-- Stacked Bar Chart -->
-  <div class="sm:col-span-2 lg:col-span-2 bg-white shadow-md hover:shadow-xl rounded-2xl p-6 transition">
-    <h3 class="text-md font-semibold mb-2 text-gray-700">État des produits</h3>
-    <div class="h-64">
-      <canvas baseChart
-              [data]="barChartData"
-              chartType="bar"
-              [options]="barChartOptions"></canvas>
-    </div>
+  <!-- Doughnut / Pie Chart -->
+  <h3 class="text-lg font-semibold text-gray-700 mt-4">Répartition des produits</h3>
+  <div class="w-full max-w-sm mx-auto">
+    <canvas baseChart [data]="pieChartData" [type]="'doughnut'" [options]="pieChartOptions">
+    </canvas>
   </div>
 
-  <!-- Area Chart -->
-  <div class="sm:col-span-2 lg:col-span-3 bg-white shadow-md hover:shadow-xl rounded-2xl p-6 transition">
-    <h3 class="text-md font-semibold mb-2 text-gray-700">Produits expirés dans le temps</h3>
-    <div class="h-64">
-      <canvas baseChart
-              [data]="areaChartData"
-              chartType="line"
-              [options]="areaChartOptions"></canvas>
-    </div>
+  <!-- Horizontal Bar Chart -->
+  <h3 class="text-lg font-semibold text-gray-700 mt-6">Comparaison par statut</h3>
+  <div class="w-full max-w-md mx-auto">
+    <canvas baseChart [data]="barChartData" [type]="'bar'" [options]="barChartOptions">
+    </canvas>
   </div>
 
 </div>
